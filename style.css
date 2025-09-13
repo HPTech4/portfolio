@@ -241,7 +241,6 @@ h1{
 .service{
     padding: 60px 10%;
     background-color: white;
-    /*opacity: 0;*/
     transform: translateY(50px);
     transition: all 0.5s ease;
     margin: 100px 0;
@@ -297,7 +296,7 @@ h1{
     background: var(--primary-color);
     transform: scaleX(0);
     transition: transform var(--transition-fast);
-    transform-origin: left;
+    transform-origin: center;
 }
 
 .grid1:hover {
@@ -402,7 +401,7 @@ h1{
 }
 .part-btn{
     background-color: #2563eb;
-    width: max-content;
+    width: 51%;
     padding: 10px;
     height: max-content;
     border-radius: 15px;
@@ -426,7 +425,10 @@ h1{
     max-width: 1400px;
     margin: 0 auto;
 }
-
+.About .about-container {
+    flex: 1;
+    min-width: 280px;
+}
 .image {
     display: flex;
     justify-content: center;
@@ -604,20 +606,24 @@ ul li {
     background-color: var(--primary-dark);
 }
 
-.contact-icons .icons {
+.icons {
     display: flex;
     gap: var(--spacing-md);
     flex-wrap: wrap;
     margin-top: var(--spacing-lg);
 }
-
-.contact-icons .icons a {
+.icons a {
     font-size: 1.5rem;
     color: var(--primary-color);
     transition: transform var(--transition-fast);
+    background-color:var(--bg-white) ;
+    box-shadow: var(--shadow-lg);
+    padding: var(--spacing-sm);
+    border-radius: 50% ;
+    
 }
 
-.contact-icons .icons a:hover {
+.icons a:hover {
     transform: translateY(-3px);
     color: var(--text-dark);
 }
@@ -669,6 +675,7 @@ footer a:hover {
     footer {
         padding: var(--spacing-md);
     }
+   
 }
    
 

@@ -30,7 +30,8 @@ const typewriterEffect = {
 // Start typewriter when page loads
 window.onload = () => typewriterEffect.init();
 
-// GSAP Animations
+document.addEventListener("DOMContentLoaded", () => {
+  // GSAP Animations
 gsap.registerPlugin(ScrollTrigger);
 
 // Services section animation
@@ -41,7 +42,7 @@ gsap.from(".service", {
     toggleActions: "play none none reset"
   },
   y: 50,
-  opacity: 0,
+  opacity: 1,
   duration: 1.2,
   ease: "power2.out"
 });
@@ -54,7 +55,7 @@ gsap.from(".project .grid > div", {
     toggleActions: "play none none reset"
   },
   y: 30,
-  opacity: 0,
+  opacity: 1,
   duration: 0.8,
   stagger: 0.2,
   ease: "power2.out"
@@ -68,8 +69,10 @@ gsap.from(".skillTag", {
     toggleActions: "play none none reset"
   },
   scale: 0.8,
-  opacity: 0,
+  opacity: 1,
   duration: 0.5,
   stagger: 0.1,
-  ease: "back.out(1.7)"
+  ease: "back.out(1.9)"
 });
+});
+
