@@ -20,7 +20,7 @@ if (hamburger && navMenu) {
 
 // Improved Typewriter effect (respects prefers-reduced-motion)
 const typewriterEffect = {
-  text: "Alimi Azeez Opeyemi - Full Stack Developer.",
+  text: "Alimi Azeez Opeyemi",
   element: document.getElementById("Typewriter"),
   delay: 120, // faster typing
 

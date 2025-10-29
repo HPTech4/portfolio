@@ -5,48 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Portfolio of Alimi AbdulAzeez, React, CSS, HTML, Tailwind, JavaScript, Frontend, Backend, showcasing projects and skills in web development.">
     <title>Alimi Azeez Opeyemi</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap">
+    <!-- Professional font stack: Inter for UI, Merriweather for headings -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Merriweather:wght@700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <!-- Load custom stylesheet after Tailwind so custom rules can override utility classes when needed -->
+    <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="coding.png" type="image/x-icon">
 </head>
 <body>
-        <header> 
-         <h1 class="logo"> HPTec</h1>
-           <nav id="nav-menu">
-              <a href="#home"> Home </a>
-              <a href="#about"> About </a>
-              <a href="#skill"> Skills </a>
-              <a href="#project"> Project </a>
-              <a href="Alimi Azeez- Resume.pdf" download class="btn"> Resume </a>
-           </nav>
-        <!-- Hamburger icon -->
-        <div id="hamburger">
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
-        </div>
-      </header>
+        <header>
+            <div class="container header-inner">
+                <a class="logo" href="#home" aria-label="Go to home">Alimi Azeez</a>
+                <nav id="nav-menu" aria-label="Primary Navigation">
+                    <a href="#home" aria-current="page">Home</a>
+                    <a href="#about">About</a>
+                    <a href="#skill">Skills</a>
+                    <a href="#project">Projects</a>
+                    <a href="Alimi Azeez- Resume.pdf" download class="btn">Resume</a>
+                </nav>
+
+                <!-- Hamburger icon -->
+                <button id="hamburger" aria-label="Toggle navigation" aria-expanded="false">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+            </div>
+        </header>
       <main>
         <section class="hero" id="home">
-            <div class="content">
-                <h3> Hello, I am</h3>
-                <h1 class="slide-in" id="Typewriter">   </h1>
-                <p class="fade-in">Full stack Developer || Lifelong Learner </p>
-                <div class="icons">
-                    <a href="https://www.linkedin.com/in/alimi-azeez-opeyemi" target="_blank"><i class="fab fa-linkedin"></i></a>
-                    <a href="https://twitter.com/AzeezAlimi17647" target="_blank"><i class="fab fa-twitter"></i></a>
-                    <a href="mailto:alimiazeez4@gmail.com"><i class="fas fa-envelope"></i></a>
-                    <a href="https://github.com/HPTech4" target="_blank"><i class="fab fa-github"></i></a>
+            <div class="container hero-grid">
+                <div class="hero-content">
+                    <p class="eyebrow">Hello, I'm</p>
+                    <h1 class="slide-in" id="Typewriter"></h1>
+                    <p class="lead fade-in">Full‑stack Developer focused on modern web apps, performance and great UX.</p>
+
+                    <div class="hero-ctas">
+                        <a href="#contact" class="btn primary">Hire me</a>
+                        <a href="Alimi Azeez- Resume.pdf" class="btn outline">Download CV</a>
+                    </div>
+
+                    <div class="icons">
+                        <a href="https://www.linkedin.com/in/alimi-azeez-opeyemi" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i></a>
+                        <a href="https://twitter.com/AzeezAlimi17647" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i></a>
+                        <a href="mailto:alimiazeez4@gmail.com"><i class="fas fa-envelope"></i></a>
+                        <a href="https://github.com/HPTech4" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+                    </div>
                 </div>
-                  <a href="#contact" class="pryBtn"> Let's create an awesome </a>
+
+                <div class="hero-image">
+                    <img src="Assets/profile1.jpg" alt="Profile photo of Alimi Azeez" loading="lazy">
+                </div>
             </div>
         </section>
-        <section class="About" id="about">
-            <div class="image">
-                <img src="Assets/profile1.jpg" alt="Emi gangan" sizes="" loading = "lazy">
-            </div>
+        <section class="about" id="about">
+            <figure class="image">
+                <img src="Assets/profile1.jpg" alt="Portrait of Alimi Azeez, full-stack developer" loading="lazy" aria-describedby="profile-desc">
+                <figcaption id="profile-desc" class="sr-only">Profile photo of Alimi Azeez — full-stack developer focused on modern web development and user experience.</figcaption>
+            </figure>
             <div class="about-container">
                 <h2>Who am I?</h2>
                     <p class="text-xl font-medium text-primary-600 mb-4">Full Stack Developer specializing in Modern Web Technologies</p>
@@ -78,99 +95,62 @@
                     </div>
             </div>
         </section>
-        <section class="py-16 bg-gray-100" id="project">
+        <section class="p-12 bg-gray-100" id="project">
             <h2 class="text-3xl font-bold text-center mb-4">FEATURED WORK</h2>
             <p class="text-gray-600 text-center max-w-2xl mx-auto mb-12">
                 I love making websites that can grow big, finding useful solutions, and always learning to get better in the IT
                 world.
             </p>
         
-            <div class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 p-8">
-                <div class="transition-all duration-300 hover:transform hover:scale-105">
-                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                        <img src="Assets/Minipic.PNG" alt="Minibot" class="w-full h-48 object-cover">
-                        <div class="p-6 bg-gray-800 bg-opacity-90 text-white">
-                            <h3 class="text-xl font-bold mb-2">MiniBot</h3>
-                            <p class="text-gray-300 mb-4">....... </p>
-                            <div class="flex space-x-4">
-                                <a href="http://hptech-minibot.netlify.app"><button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors duration-300"> Live Demo
-                                </button></a>
-                                <a href="http://github.com/HPTech4"><button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors duration-300"> Github
-                                </button></a>
+            <div id="projects-grid" class="projects-grid container p-12">
+                    <article class="project-card">
+                        <img src="Assets/Minipic.PNG" alt="MiniBot web UI screenshot" loading="lazy">
+                        <div class="card-body">
+                            <h3>MiniBot</h3>
+                            <p>MiniBot is a conversational assistant built with modern JavaScript. It demonstrates UI/UX for chat interfaces and integration with backend services.</p>
+                            <div class="card-ctas">
+                                <a class="btn primary" href="http://hptech-minibot.netlify.app" target="_blank" rel="noopener">Live demo</a>
+                                <a class="btn outline" href="http://github.com/HPTech4" target="_blank" rel="noopener">Github</a>
                             </div>
                         </div>
-                    </div>
-                </div>
-        
-                <div class="transition-all duration-300 hover:transform hover:scale-105">
-                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                        <img src="Assets/weatherdashboard.PNG" alt="Weather Dashboard" class="w-full h-48 object-cover">
-                        <div class="p-6 bg-gray-800 bg-opacity-90 text-white">
-                            <h3 class="text-xl font-bold mb-2">Weather Dashboard</h3>
-                            <p class="text-gray-300 mb-4">A real-time weather app using API integration display weather condition by city. Built with Javascript.
-                            </p>
-                            <div class="flex space-x-4">
-                                <a href="http://h....netlify.app"><button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors duration-300"> Live Demo
-                                </button></a>
-                                <a href="http://github.com/HPTech4"><button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors duration-300"> Github
-                                </button></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    </article>
 
-                <div class="transition-all duration-300 hover:transform hover:scale-105">
-                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                        <img src="Assets/Equiz.PNG" alt="E-Quiz" class="w-full h-48 object-cover">
-                        <div class="p-6 bg-gray-800 bg-opacity-90 text-white">
-                            <h3 class="text-xl font-bold mb-2">E-Quiz App</h3>
-                            <p class="text-gray-300 mb-4">An Interactive quiz application that test users on various topics, tracks score and give instant feedback. Created 
-                                using HTML, CSS and Javascript
-                            </p>
-                            <div class="flex space-x-4">
-                                  <a href="http://...netlify.app"><button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors duration-300"> Live Demo
-                                </button></a>
-                                <a href="http://github.com/HPTech4"><button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors duration-300"> Github
-                                </button></a>
+                    <article class="project-card">
+                        <img src="Assets/weatherdashboard.PNG" alt="Weather Dashboard screenshot" loading="lazy">
+                        <div class="card-body">
+                            <h3>Weather Dashboard</h3>
+                            <p>A real-time weather app that fetches and displays weather data by city using a public API. Built with vanilla JavaScript and a responsive layout.</p>
+                            <div class="card-ctas">
+                                <a class="btn primary" href="http://h....netlify.app" target="_blank" rel="noopener">Live demo</a>
+                                <a class="btn outline" href="http://github.com/HPTech4" target="_blank" rel="noopener">Github</a>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </article>
 
-                <div class="transition-all duration-300 hover:transform hover:scale-105">
-                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                        <img src="Assets/crop.PNG" alt="Crop Management" class="w-full h-48 object-cover">
-                        <div class="p-6 bg-gray-800 bg-opacity-90 text-white">
-                            <h3 class="text-xl font-bold mb-2">Crop Management System</h3>
-                            <p class="text-gray-300 mb-4">A smart web application that accepts an image of a plant and analyzes it to detect the presence of diseases. If a diseaes found, the system
-                                use API integration to identifies it and provides suggestion solutions.
-                            </p>
-                            <div class="flex space-x-4">
-                                  <a href="..."><button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors duration-300"> Live Demo
-                                </button></a>
-                                <a href="..."><button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors duration-300"> Github
-                                </button></a>
+                    <article class="project-card">
+                        <img src="Assets/crop.PNG" alt="Crop disease detection UI" loading="lazy">
+                        <div class="card-body">
+                            <h3>Crop Management System</h3>
+                            <p>A web app that accepts a plant image and analyzes it to detect disease, then suggests remediation steps via API-driven classification results.</p>
+                            <div class="card-ctas">
+                                <a class="btn primary" href="#" target="_blank" rel="noopener">Live demo</a>
+                                <a class="btn outline" href="#" target="_blank" rel="noopener">Github</a>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </article>
 
-                <div class="transition-all duration-300 hover:transform hover:scale-105">
-                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                        <img src="Assets/expenses 3.PNG" alt="Expenses Tracker" class="w-full h-48 object-cover">
-                        <div class="p-6 bg-gray-800 bg-opacity-90 text-white">
-                            <h3 class="text-xl font-bold mb-2">Expenses Tracker</h3>
-                            <p class="text-gray-300 mb-4"> .....  </p>
-                            <div class="flex space-x-4">
-                                <a href="http://hptech-expensestracker.netlify.app"><button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors duration-300"> Live Demo
-                                </button></a>
-                                <a href="http://github.com/HPTech4"><button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors duration-300"> Github
-                                </button></a>
+                    <article class="project-card">
+                        <img src="Assets/expenses 3.PNG" alt="Expenses Tracker app screenshot" loading="lazy">
+                        <div class="card-body">
+                            <h3>Expenses Tracker</h3>
+                            <p>Personal finance tracker for logging expenses and visualizing spending. Built with JavaScript and small-state management.</p>
+                            <div class="card-ctas">
+                                <a class="btn primary" href="http://hptech-expensestracker.netlify.app" target="_blank" rel="noopener">Live demo</a>
+                                <a class="btn outline" href="http://github.com/HPTech4" target="_blank" rel="noopener">Github</a>
                             </div>
                         </div>
-                    </div>
+                    </article>
                 </div>
-            </div>
         </section>
 
         <section class="service"  id="service">
@@ -275,12 +255,12 @@
                 <div class="contact-form">
                       <h2>Let's Talk</h2>
                       <p>Please fill out the form and I’ll get back to you shortly.</p>
-                    <form action="https://formspree.io/f/xdkznpyz" method="POST">
+                    <form id="contactForm" method="POST">
                         <input type="text" name="name" placeholder="Your Name" required>
                         <input type="email" name="email" placeholder="Your Email" required>
                         <textarea name="message" placeholder="Your Message" rows="5" required></textarea>
                         <button type="submit">Send</button>
-                
+                    </form>
                 </div>
                 <div class="contact-icons">
                     <h2>Connect with Me</h2>
