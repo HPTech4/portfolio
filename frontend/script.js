@@ -56,10 +56,14 @@ window.onload = () => {
   }
 };
 
-// Pick backend base URL automatically: localhost for dev, deployed for production
-const API_BASE = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost')
-  ? 'http://localhost:5000'
-  : 'https://eestronic-project.onrender.com'; // replace with your Render URL if different
+
+
+const metaApi = document.querySelector('meta[name="api-base"]')?.getAttribute('content');
+const API_BASE = (metaApi && metaApi.trim() !== '')
+  ? metaApi.trim()
+  : ((window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost')
+    ? 'http://localhost:5000'
+    : 'https://eestronic-project.onrender.com');
 
 document.addEventListener("DOMContentLoaded", () => {
   // GSAP Animations (only if gsap is loaded)

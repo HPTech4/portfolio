@@ -6,58 +6,50 @@ require("dotenv").config();
 
 const app = express();
 
-//  CORS settings — allow your local frontend & future deployed domain
+
 app.use(
   cors({
-    origin: [
-      "http://127.0.0.1:5500",
-      "http://localhost:5500",
-      "https://olaoyeblessing.netlify.app" 
-    ],
-    methods: ["POST", "GET", "OPTIONS"  ],
+    origin: ["https://hptech.netlify.app"],
+    methods: ["POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
   })
 );
 
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
-// Initialize Resend
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// POST route to handle form submission
+//  Email handler
 app.post("/send", async (req, res) => {
-  const { name, email, message } = req.body;
+  const { name, email, message } = req.body || {};
+  if (!name || !email || !message)
+    return res.status(400).json({ success: false, message: "All fields are required." });
 
   try {
     const response = await resend.emails.send({
-      from: "Your Portfolio <onboarding@resend.dev>", 
-      to: process.env.RECEIVER_EMAIL, 
+      from: "Portfolio Contact <onboarding@resend.dev>",
+      to: process.env.RECEIVER_EMAIL,
       subject: `New message from ${name}`,
-      text: `From: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
+      html: `
+        <p><strong>From:</strong> ${name} &lt;${email}&gt;</p>
+        <p><strong>Message:</strong></p>
+        <p>${message.replace(/\n/g, "<br>")}</p>
+      `,
     });
 
-    console.log("Email sent:", response);
-    res.status(200).json({ success: true, message: "Email sent successfully!" });
+    if (process.env.NODE_ENV !== "production")
+      console.log("Email response:", response);
+
+    return res.status(200).json({ success: true, message: "Email sent successfully!" });
   } catch (error) {
-    console.error("Error sending email:", error);
-    res.status(500).json({ success: false, message: "Failed to send email." });
+    console.error("Email send error:", error.message);
+    return res.status(500).json({ success: false, message: "Failed to send email." });
   }
 });
 
-// Handle preflight requests explicitly to ensure proper CORS headers for some environments
-app.options("/send", (req, res) => {
-  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
-  res.header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  // If using credentials, echo the origin and set allow-credentials
-  if (req.headers.origin && req.headers.origin.startsWith("http")) {
-    res.header("Access-Control-Allow-Origin", req.headers.origin);
-    res.header("Access-Control-Allow-Credentials", "true");
-  }
-  return res.sendStatus(204);
-});
+//  Health check route
+app.get("/health", (req, res) =>
+  res.json({ ok: true, env: process.env.NODE_ENV || "development" })
+);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(` Server running on port ${PORT}`));

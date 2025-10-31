@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- If your backend is deployed, set the API base URL here so the frontend will contact it even when served locally -->
+    <!-- Example: <meta name="api-base" content="https://your-backend.onrender.com"> -->
+    <meta name="api-base" content="https://eestronic-project.onrender.com">
     <meta name="description" content="Portfolio of Alimi AbdulAzeez, React, CSS, HTML, Tailwind, JavaScript, Frontend, Backend, showcasing projects and skills in web development.">
     <title>Alimi Azeez Opeyemi</title>
     <!-- Professional font stack: Inter for UI, Merriweather for headings -->
@@ -16,7 +19,7 @@
 <body>
         <header>
             <div class="container header-inner">
-                <a class="logo" href="#home" aria-label="Go to home">Alimi Azeez</a>
+                <a class="logo" href="#home" aria-label="Go to home">HPTech</a>
                 <nav id="nav-menu" aria-label="Primary Navigation">
                     <a href="#home" aria-current="page">Home</a>
                     <a href="#about">About</a>
@@ -52,10 +55,6 @@
                         <a href="mailto:alimiazeez4@gmail.com"><i class="fas fa-envelope"></i></a>
                         <a href="https://github.com/HPTech4" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
                     </div>
-                </div>
-
-                <div class="hero-image">
-                    <img src="Assets/profile1.jpg" alt="Profile photo of Alimi Azeez" loading="lazy">
                 </div>
             </div>
         </section>
@@ -110,7 +109,7 @@
                             <p>MiniBot is a conversational assistant built with modern JavaScript. It demonstrates UI/UX for chat interfaces and integration with backend services.</p>
                             <div class="card-ctas">
                                 <a class="btn primary" href="http://hptech-minibot.netlify.app" target="_blank" rel="noopener">Live demo</a>
-                                <a class="btn outline" href="http://github.com/HPTech4" target="_blank" rel="noopener">Github</a>
+                                <a class="btn outline" href="http://github.com/HPTech4/Minibot" target="_blank" rel="noopener">Github</a>
                             </div>
                         </div>
                     </article>
@@ -121,8 +120,8 @@
                             <h3>Weather Dashboard</h3>
                             <p>A real-time weather app that fetches and displays weather data by city using a public API. Built with vanilla JavaScript and a responsive layout.</p>
                             <div class="card-ctas">
-                                <a class="btn primary" href="http://h....netlify.app" target="_blank" rel="noopener">Live demo</a>
-                                <a class="btn outline" href="http://github.com/HPTech4" target="_blank" rel="noopener">Github</a>
+                                <a class="btn primary" href="https://hpweatherdashboard.netlify.app" target="_blank" rel="noopener">Live demo</a>
+                                <a class="btn outline" href="https://github.com/HPTech4/weather-dashboard" target="_blank" rel="noopener">Github</a>
                             </div>
                         </div>
                     </article>
@@ -133,8 +132,8 @@
                             <h3>Crop Management System</h3>
                             <p>A web app that accepts a plant image and analyzes it to detect disease, then suggests remediation steps via API-driven classification results.</p>
                             <div class="card-ctas">
-                                <a class="btn primary" href="#" target="_blank" rel="noopener">Live demo</a>
-                                <a class="btn outline" href="#" target="_blank" rel="noopener">Github</a>
+                                <a class="btn primary" href="#" disable  rel="noopener">Live demo</a>
+                                <a class="btn outline" href="https://github.com/HPTech4/crop-diseases-detection" target="_blank" rel="noopener">Github</a>
                             </div>
                         </div>
                     </article>
@@ -145,8 +144,8 @@
                             <h3>Expenses Tracker</h3>
                             <p>Personal finance tracker for logging expenses and visualizing spending. Built with JavaScript and small-state management.</p>
                             <div class="card-ctas">
-                                <a class="btn primary" href="http://hptech-expensestracker.netlify.app" target="_blank" rel="noopener">Live demo</a>
-                                <a class="btn outline" href="http://github.com/HPTech4" target="_blank" rel="noopener">Github</a>
+                                <a class="btn primary" href="https://hptech-expenses-tracker.netlify.app" target="_blank" rel="noopener">Live demo</a>
+                                <a class="btn outline" href="http://github.com/HPTech4/expenses-tracker" target="_blank" rel="noopener">Github</a>
                             </div>
                         </div>
                     </article>
@@ -255,7 +254,7 @@
                 <div class="contact-form">
                       <h2>Let's Talk</h2>
                       <p>Please fill out the form and I’ll get back to you shortly.</p>
-                    <form id="contactForm" method="POST">
+                    <form id="contactForm" >
                         <input type="text" name="name" placeholder="Your Name" required>
                         <input type="email" name="email" placeholder="Your Email" required>
                         <textarea name="message" placeholder="Your Message" rows="5" required></textarea>
