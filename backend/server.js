@@ -9,16 +9,13 @@ const app = express();
 //  CORS settings — allow your local frontend & future deployed domain
 app.use(
   cors({
-    origin: [
-      "http://127.0.0.1:5500",
-      "http://localhost:5500",
-      "https://hptech.netlify.app" 
-    ],
-    methods: ["POST", "GET", "OPTIONS"  ],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
+    origin: "*", 
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
   })
 );
+
+app.options("*", cors());
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());

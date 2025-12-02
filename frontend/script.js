@@ -63,7 +63,7 @@ const API_BASE = (metaApi && metaApi.trim() !== '')
   ? metaApi.trim()
   : ((window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost')
     ? 'http://localhost:5000'
-    : 'https://eestronic-project.onrender.com');
+    : 'https://portfolio-fgsl.onrender.com');
 
 document.addEventListener("DOMContentLoaded", () => {
   // Initialize animations when GSAP becomes available (polling wrapper handles load order)
