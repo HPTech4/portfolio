@@ -6,68 +6,58 @@ require("dotenv").config();
 
 const app = express();
 
+//  CORS settings — allow your local frontend & future deployed domain
+app.use(
+  cors({
+    origin: [
+      "http://127.0.0.1:5500",
+      "http://localhost:5500",
+      "https://hptech.netlify.app" 
+    ],
+    methods: ["POST", "GET", "OPTIONS"  ],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
 
-// CORS allowlist: include your deployed frontend and local dev origins
-const allowedOrigins = [
-  "https://hptech.netlify.app",
-  "http://localhost:5500",
-  "http://127.0.0.1:5500",
-];
-
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin like server-to-server or curl
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      return callback(null, true);
-    }
-    console.warn(`Blocked CORS request from origin: ${origin}`);
-    return callback(new Error("Not allowed by CORS"));
-  },
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  optionsSuccessStatus: 200,
-};
-
-app.use(cors(corsOptions));
-// Ensure OPTIONS preflight requests are handled for all routes
-app.options("*", cors(corsOptions));
-
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+// Initialize Resend
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-//  Email handler
+// POST route to handle form submission
 app.post("/send", async (req, res) => {
-  const { name, email, message } = req.body || {};
-  if (!name || !email || !message)
-    return res.status(400).json({ success: false, message: "All fields are required." });
+  const { name, email, message } = req.body;
 
   try {
     const response = await resend.emails.send({
-      from: "Portfolio Contact <onboarding@resend.dev>",
-      to: process.env.RECEIVER_EMAIL,
+      from: "Your Portfolio <onboarding@resend.dev>", 
+      to: process.env.RECEIVER_EMAIL, 
       subject: `New message from ${name}`,
-      html: `
-        <p><strong>From:</strong> ${name} &lt;${email}&gt;</p>
-        <p><strong>Message:</strong></p>
-        <p>${message.replace(/\n/g, "<br>")}</p>
-      `,
+      text: `From: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
     });
 
-    if (process.env.NODE_ENV !== "production")
-      console.log("Email response:", response);
-
-    return res.status(200).json({ success: true, message: "Email sent successfully!" });
+    console.log("Email sent:", response);
+    res.status(200).json({ success: true, message: "Email sent successfully!" });
   } catch (error) {
-    console.error("Email send error:", error.message);
-    return res.status(500).json({ success: false, message: "Failed to send email." });
+    console.error("Error sending email:", error);
+    res.status(500).json({ success: false, message: "Failed to send email." });
   }
 });
 
-//  Health check route
-app.get("/health", (req, res) =>
-  res.json({ ok: true, env: process.env.NODE_ENV || "development" })
-);
+// Handle preflight requests explicitly to ensure proper CORS headers for some environments
+app.options("/send", (req, res) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  // If using credentials, echo the origin and set allow-credentials
+  if (req.headers.origin && req.headers.origin.startsWith("http")) {
+    res.header("Access-Control-Allow-Origin", req.headers.origin);
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+  return res.sendStatus(204);
+});
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(` Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
