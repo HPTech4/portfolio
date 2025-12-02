@@ -66,9 +66,13 @@ const API_BASE = (metaApi && metaApi.trim() !== '')
     : 'https://eestronic-project.onrender.com');
 
 document.addEventListener("DOMContentLoaded", () => {
-  // GSAP Animations (only if gsap is loaded)
-  if (typeof gsap !== 'undefined') {
+  // Initialize animations when GSAP becomes available (polling wrapper handles load order)
+  function initAnimations() {
     try {
+      if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+        console.warn('initAnimations called but gsap or ScrollTrigger missing');
+        return;
+      }
       gsap.registerPlugin(ScrollTrigger);
 
       // Services section animation
@@ -84,19 +88,23 @@ document.addEventListener("DOMContentLoaded", () => {
         ease: "power2.out"
       });
 
-      // Projects section animation — use #project selector to match HTML id
-      gsap.from("#project .grid > div", {
-        scrollTrigger: {
-          trigger: "#project",
-          start: "top 80%",
-          toggleActions: "play none none reset"
-        },
-        y: 30,
-        opacity: 1,
-        duration: 0.8,
-        stagger: 0.2,
-        ease: "power2.out"
-      });
+      // Projects section animation — if the selector exists
+      try {
+        gsap.from("#project .projects-grid > article", {
+          scrollTrigger: {
+            trigger: "#project",
+            start: "top 80%",
+            toggleActions: "play none none reset"
+          },
+          y: 30,
+          opacity: 1,
+          duration: 0.8,
+          stagger: 0.12,
+          ease: "power2.out"
+        });
+      } catch (e) {
+        // selector might not match; fallback quietly
+      }
 
       // Skills section animation
       gsap.from(".skillTag", {
@@ -112,12 +120,26 @@ document.addEventListener("DOMContentLoaded", () => {
         ease: "back.out(1.9)"
       });
     } catch (err) {
-      console.warn('GSAP animations failed:', err);
+      console.warn('GSAP animations failed during init:', err);
     }
-  } else {
-    // gsap not loaded — skip animations
-    console.info('GSAP not available, skipping animations.');
   }
+
+  // Poll for GSAP availability and initialize animations (timeout after 5s)
+  (function waitForGsap(timeoutMs = 5000, intervalMs = 100) {
+    const start = Date.now();
+    const poll = () => {
+      if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+        initAnimations();
+        return;
+      }
+      if (Date.now() - start >= timeoutMs) {
+        console.info('GSAP did not load within timeout — skipping animations');
+        return;
+      }
+      setTimeout(poll, intervalMs);
+    };
+    poll();
+  })();
 });
 
 // Read more / collapse behavior for long project descriptions
@@ -198,13 +220,24 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         clearTimeout(timeout);
 
+        // Diagnostic: log endpoint and status for easier debugging
+        console.log('Contact form POST to', `${API_BASE}/send`, 'status', response.status);
         if (!response.ok) {
-          // Try to parse JSON error body, otherwise throw generic
+          // Try to parse JSON error body, otherwise read text
           let errMsg = `Request failed with status ${response.status}`;
           try {
-            const errJson = await response.json();
-            if (errJson && errJson.message) errMsg = errJson.message;
-          } catch (_) {}
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+              const errJson = await response.json();
+              if (errJson && errJson.message) errMsg = errJson.message;
+              else errMsg = JSON.stringify(errJson);
+            } else {
+              const txt = await response.text();
+              if (txt) errMsg = txt;
+            }
+          } catch (parseErr) {
+            console.warn('Failed to parse error body:', parseErr);
+          }
           throw new Error(errMsg);
         }
 
