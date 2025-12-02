@@ -7,13 +7,31 @@ require("dotenv").config();
 const app = express();
 
 
-app.use(
-  cors({
-    origin: ["https://hptech.netlify.app"],
-    methods: ["POST"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+// CORS allowlist: include your deployed frontend and local dev origins
+const allowedOrigins = [
+  "https://hptech.netlify.app",
+  "http://localhost:5500",
+  "http://127.0.0.1:5500",
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin like server-to-server or curl
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    console.warn(`Blocked CORS request from origin: ${origin}`);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
+// Ensure OPTIONS preflight requests are handled for all routes
+app.options("*", cors(corsOptions));
 
 app.use(bodyParser.json());
 const resend = new Resend(process.env.RESEND_API_KEY);
