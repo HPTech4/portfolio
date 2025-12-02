@@ -6,16 +6,26 @@ require("dotenv").config();
 
 const app = express();
 
-//  CORS settings — allow your local frontend & future deployed domain
+// ----------- FIXED CORS FOR RENDER + EXPRESS 5 -----------
 app.use(
   cors({
-    origin: "*", 
+    origin: "*",
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"]
   })
 );
 
-app.options("*", cors());
+// Handle ALL preflight (OPTIONS) requests safely for Express 5
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    return res.sendStatus(204);
+  }
+  next();
+});
+// -----------------------------------------------------------
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -29,8 +39,8 @@ app.post("/send", async (req, res) => {
 
   try {
     const response = await resend.emails.send({
-      from: "Your Portfolio <onboarding@resend.dev>", 
-      to: process.env.RECEIVER_EMAIL, 
+      from: "Your Portfolio <onboarding@resend.dev>",
+      to: process.env.RECEIVER_EMAIL,
       subject: `New message from ${name}`,
       text: `From: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
     });
@@ -41,19 +51,6 @@ app.post("/send", async (req, res) => {
     console.error("Error sending email:", error);
     res.status(500).json({ success: false, message: "Failed to send email." });
   }
-});
-
-// Handle preflight requests explicitly to ensure proper CORS headers for some environments
-app.options("/send", (req, res) => {
-  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
-  res.header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  // If using credentials, echo the origin and set allow-credentials
-  if (req.headers.origin && req.headers.origin.startsWith("http")) {
-    res.header("Access-Control-Allow-Origin", req.headers.origin);
-    res.header("Access-Control-Allow-Credentials", "true");
-  }
-  return res.sendStatus(204);
 });
 
 const PORT = process.env.PORT || 5000;
