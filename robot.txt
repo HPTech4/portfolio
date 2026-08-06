@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /server.js
+Disallow: /node_modules/
+Disallow: /.env
+Disallow: /package.json
+Disallow: /package-lock.json
+
+Sitemap: https://hptech.vercel.app/sitemap.xml
+
+# Crawl-delay: 10

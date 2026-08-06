@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - HPTech Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #F8F7F2 0%, #EFF8F5 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .offline-container {
+            background: white;
+            border-radius: 24px;
+            padding: 3rem;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(29, 158, 117, 0.1);
+            border: 2px solid rgba(29, 158, 117, 0.1);
+        }
+        
+        .offline-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            color: #D85A30;
+        }
+        
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            color: #085041;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: #1D9E75;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        p {
+            color: #444441;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.8rem 1.8rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: #1D9E75;
+            color: white;
+            box-shadow: 0 4px 20px rgba(29, 158, 117, 0.3);
+        }
+        
+        .btn-primary:hover {
+            background: #085041;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            border-color: #D85A30;
+            color: #D85A30;
+            background: transparent;
+        }
+        
+        .btn-outline:hover {
+            background: #D85A30;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #FAECE7;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #D85A30;
+            margin-bottom: 2rem;
+        }
+        
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #D85A30;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .cached-info {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(29, 158, 117, 0.1);
+            font-size: 0.85rem;
+            color: #888780;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📡</div>
+        <h1>You're Offline</h1>
+        <div class="subtitle">// HPTech</div>
+        
+        <div class="status">
+            <span class="dot"></span>
+            No internet connection
+        </div>
+        
+        <p>
+            Don't worry! Some parts of the portfolio are still available. 
+            You can browse cached pages and projects. The contact form will 
+            save your message and send it when you're back online.
+        </p>
+        
+        <div class="actions">
+            <a href="/" class="btn btn-primary">← Go to Homepage</a>
+            <button onclick="window.location.reload()" class="btn btn-outline">Try Again</button>
+        </div>
+        
+        <div class="cached-info">
+            <small> Cached content is available for offline viewing</small>
+        </div>
+    </div>
+    
+    <script>
+        // Check connectivity and reload if back online
+        window.addEventListener('online', () => {
+            window.location.href = '/';
+        });
+        
+        // Service Worker registration check
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then(registration => {
+                console.log('Service Worker is ready');
+            });
+        }
+    </script>
+</body>
+</html>
