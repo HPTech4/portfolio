@@ -26,6 +26,7 @@ const allowedOrigins = [
   "https://hptech.netlify.app", // Alternative domain
   "http://localhost:3000", // Local development
   "http://localhost:5000", // Local backend
+  "http://localhost:5500", // Live Server
   "http://127.0.0.1:5500", // Live Server
 ];
 

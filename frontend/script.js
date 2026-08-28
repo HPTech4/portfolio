@@ -6,10 +6,9 @@
 // CONFIGURATION
 // ============================================
 const CONFIG = {
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // CHANGE THIS TO YOUR ACTUAL BACKEND URL
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  API_ENDPOINT: "https://formspree.io/f/meoezape", // ← CHANGE THIS
+  // Local backend endpoint for development.
+  // Replace this later with your deployed backend URL when needed.
+  API_ENDPOINT: "http://localhost:5000/send",
 
   // Resume file path
   RESUME_PATH: "/Assets/Alimi Azeez.pdf",
@@ -107,6 +106,10 @@ class NetworkManager {
   }
 
   async sendMessage(data) {
+    if (!CONFIG.API_ENDPOINT) {
+      throw new Error("No API endpoint configured yet.");
+    }
+
     const response = await fetch(CONFIG.API_ENDPOINT, {
       method: "POST",
       headers: {
@@ -518,6 +521,17 @@ async function sendMessage(event) {
     timestamp: new Date().toISOString(),
   };
 
+  if (!CONFIG.API_ENDPOINT) {
+    formMsg.textContent =
+      "The contact form is currently being wired up. Please email me directly at alimiazeez4@gmail.com.";
+    formMsg.className = "info";
+    showToast(
+      "Contact form is disabled for now. Please email me directly.",
+      "info",
+    );
+    return;
+  }
+
   // Check if online
   if (!navigator.onLine) {
     // Queue the message for later
@@ -531,10 +545,6 @@ async function sendMessage(event) {
   }
 
   try {
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // THIS IS WHERE THE MAGIC HAPPENS
-    // Change CONFIG.API_ENDPOINT to your backend URL
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     const response = await fetch(CONFIG.API_ENDPOINT, {
       method: "POST",
       headers: {
