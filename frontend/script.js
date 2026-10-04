@@ -551,15 +551,6 @@
   // ========================================================================
   // Project filters
   //
-  // Only present on projects.html. The controls are hidden by CSS unless
-  // scripting is available, so with JS off the full list simply renders.
-  //
-  // Filtering has to cooperate with the reveal system. Every .project gets its
-  // own ScrollTrigger, and an article hidden at load measures as zero-height —
-  // so its tween either fires against a collapsed box or never fires at all,
-  // leaving the contents at opacity 0. Anything a filter brings back is
-  // therefore settled directly, rather than waiting on a trigger that has
-  // already been and gone.
   // ========================================================================
 
   var filterBar = document.getElementById("project-filters");
