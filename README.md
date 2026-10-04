@@ -310,11 +310,7 @@ Skills on the home page link into individual projects by anchor
 The form posts to Formspree. The endpoint is defined in one place: the `action`
 attribute on `#contact-form` in `index.html`.
 
-```html
-<form action="https://formspree.io/f/xdkznpyz" method="POST" novalidate>
-```
 
-To point it at a different form, edit that attribute.
 
 The `action` and `method` are real, not decorative — with JavaScript disabled
 the browser posts the form to Formspree natively and the visitor still gets a
@@ -378,88 +374,3 @@ No build command. Nothing to install.
 Without a bump, returning visitors keep the old copies until the cache is
 invalidated.
 
-## Images
-
-Five of the six case studies show a real screenshot. **CBT Center** shows
-`Assets/cbt-center.svg` — an illustration authored in the site's own palette
-rather than a capture of the product, and its `alt` text says so. Replace it
-with a real screenshot when one exists, and update the `alt` text at the same
-time: a drawing presented as a screenshot misrepresents the work, which is a
-bad trade on a page whose whole job is to be believed.
-
-All five screenshots are full-size PNGs at whatever resolution the source
-produced — roughly 1350×650, which is about 2:1. `.project-media` gives each one
-a fixed `2 / 1` frame and covers it from the top, so near-2:1 sources lose almost
-nothing. **A source much taller or wider than 2:1 will be cropped hard** — check
-before adding one, and adjust `object-position` or the frame if it cuts badly.
-Give each `<img>` `width` and `height` attributes matching the real file, so the
-browser can reserve the right space before the stylesheet lands.
-
-Three of the captures — `ctransit.PNG`, `trustlayer.PNG`, and `dayve.PNG` — come
-from dark-themed products. In dark mode `.project-media img` is dimmed slightly,
-because a light capture glares off a near-black page. Those three carry
-`.project-media--dark`, which opts them out: dimming an already-dark capture
-only muddies it. Mark a new dark capture the same way.
-
-Nothing is optimised. Converting to WebP at ~800px wide would cut page weight
-substantially — `dayve.PNG` alone is 773 KB. If you do, update the `src`
-attributes in both HTML files to match:
-
-```sh
-# ImageMagick
-magick dayve.PNG -resize 800x -quality 80 dayve.webp
-magick trustlayer.PNG -resize 800x -quality 80 trustlayer.webp
-```
-
-Two optional assets, neither of them present yet:
-
-- **`Assets/og-image.png`** — 1200×630, for link previews. The `og:image` and
-  `twitter:image` tags are deliberately omitted, because a tag pointing at a
-  file that does not exist produces a broken preview card. Add the file and the
-  tags together: `og:image`, `og:image:width`, `og:image:height`,
-  `og:image:alt`, `twitter:image`, and switch `twitter:card` back to
-  `summary_large_image`. Both HTML files carry a comment marking the spot.
-- **`Assets/icon-maskable-512x512.png`** — a full-bleed 512×512 icon with the
-  wordmark inside the central 80% safe zone, for Android's adaptive icon.
-  `icon-512x512.png` is a rounded square with transparent corners, so masking
-  it would clip the corners and expose the transparency behind them. Declare
-  it in `manifest.json` with `"purpose": "maskable"` once it exists.
-
-### The hero portrait
-
-`Assets/My Pic.png` is the headshot in the hero. **It is around 2 MB and has
-not been optimised** — that is the single heaviest thing the site downloads,
-and it is above the fold, so it cannot be lazy-loaded away. Re-export it in
-place at roughly 800px wide before this goes in front of anyone:
-
-```sh
-magick "My Pic.png" -resize 800x -quality 80 "My Pic.png"
-```
-
-The markup needs no change when you do: `.hero-portrait img` sets
-`aspect-ratio: 2 / 3` and `object-fit: cover`, so the frame is the same size
-before and after the file loads regardless of the file's real dimensions. That
-is also why the `<img>` carries no `width`/`height` — writing dimensions here
-would be guessing, and re-exporting would invalidate them.
-
-The `alt` is empty on purpose. The `h1` immediately before it already announces
-the name, and alt text that restates adjacent text is noise for a screen reader.
-
-Below 64rem the portrait follows the copy at a capped width rather than sitting
-beside it; above 64rem it becomes the hero's second column. It is hidden in
-print.
-
-## Deliberately absent
-
-Documented so nobody re-adds them by accident:
-
-- No custom cursor, typewriter, or cursor trail.
-- No infinite or looping animation of any kind. Every animation plays once —
-  the hero on load, everything else on a single scroll trigger — and then
-  gets out of the way.
-- No monospace font. Meta labels are Inter; display is Fraunces.
-- No analytics — there is no GA tag, so there are no `gtag` calls.
-- No offline form queue.
-- No backend. There was one; it was removed along with the API key it held.
-- No Tailwind, no build step, no bundler. GSAP is the only third-party script,
-  and it is optional — see "Motion".

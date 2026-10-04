@@ -305,9 +305,8 @@
                 Node.js and deployed serverlessly, so each API scales
                 independently.
               </p>
-
               <p class="project-stack">
-                Node.js · Express · REST API design · Vercel
+                HTML5 · CSS3 · Vanilla JavaScript · Node.js · Express · REST API design · Vercel
               </p>
 
               <div class="project-links">
@@ -383,7 +382,6 @@
                     />
                   </svg>
                 </a>
-                <span class="link-note">Closed beta — welcome page only</span>
               </div>
 
               <!-- Dark capture — opted out of the dark-mode dim. -->
@@ -909,7 +907,7 @@
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
-          navigator.serviceWorker.register("/sw.js").catch(() => {
+          navigator.serviceWorker.register("./sw.js").catch(() => {
             /* offline support is a bonus, not a requirement */
           });
         });
