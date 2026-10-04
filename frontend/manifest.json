@@ -1,0 +1,44 @@
+{
+  "name": "Alimi Azeez Opeyemi — Software Developer",
+  "short_name": "Alimi Azeez",
+  "description": "Software Developer building for web, mobile, and desktop. Full-stack JavaScript across React, Node.js, Express, and PostgreSQL.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF8F4",
+  "theme_color": "#FAF8F4",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["portfolio", "development", "technology"],
+  "icons": [
+    {
+      "src": "/Assets/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/Assets/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/Assets/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "All projects",
+      "url": "/projects",
+      "description": "Every shipped project"
+    },
+    {
+      "name": "Contact",
+      "url": "/#contact",
+      "description": "Get in touch"
+    }
+  ]
+}

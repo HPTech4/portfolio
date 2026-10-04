@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hptech.netlify.app/sitemap.xml

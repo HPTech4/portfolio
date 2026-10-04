@@ -1,764 +1,844 @@
-// ============================================
-// HPTECH PORTFOLIO - MAIN JAVASCRIPT
-// ============================================
+// ==========================================================================
+// Alimi Azeez Opeyemi — portfolio
+// Shared by index.html and projects.html.
+//
+// Deliberately absent: custom cursor, typewriter, parallax, infinite loops,
+// offline form queue, analytics. Every animation here plays once, on a real
+// scroll or on load, and then gets out of the way.
+// ==========================================================================
 
-// ============================================
-// CONFIGURATION
-// ============================================
-const CONFIG = {
-  // Local backend endpoint for development.
-  // Replace this later with your deployed backend URL when needed.
-  API_ENDPOINT: "http://localhost:5000/send",
+(function () {
+  "use strict";
 
-  // Resume file path
-  RESUME_PATH: "/Assets/Alimi Azeez.pdf",
+  var root = document.documentElement;
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  // Toast duration in milliseconds
-  TOAST_DURATION: 5000,
+  // ========================================================================
+  // Which reveal path this page takes
+  //
+  // Decided here, on the first lines of the file, and written to <html> as a
+  // class the stylesheet reads. The order matters: everything below this
+  // point can throw without leaving the page invisible, because the hidden
+  // state is already resolved by the time any of it runs.
+  //
+  //   reveal-off    the visitor asked for reduced motion — nothing hides
+  //   reveal-gsap   GSAP and ScrollTrigger both loaded — inline styles drive it
+  //   reveal-css    GSAP missing (offline, blocked, CDN down) — the stylesheet
+  //                 transition drives it, triggered by IntersectionObserver
+  // ========================================================================
 
-  // Form cooldown in milliseconds (prevents spam)
-  FORM_COOLDOWN: 10000,
-};
+  var revealPath =
+    reduceMotion.matches
+      ? "reveal-off"
+      : typeof window.gsap !== "undefined" &&
+          typeof window.ScrollTrigger !== "undefined"
+        ? "reveal-gsap"
+        : "reveal-css";
 
-// ============================================
-// ONLINE/OFFLINE DETECTION
-// ============================================
-class NetworkManager {
-  constructor() {
-    this.isOnline = navigator.onLine;
-    this.offlineQueue = [];
-    this.init();
+  function setRevealPath(path) {
+    revealPath = path;
+    root.classList.remove("reveal-gsap", "reveal-css", "reveal-off");
+    root.classList.add(path);
   }
 
-  init() {
-    window.addEventListener("online", () => this.handleOnline());
-    window.addEventListener("offline", () => this.handleOffline());
+  setRevealPath(revealPath);
 
-    // Check initial state
-    if (!this.isOnline) {
-      this.showOfflineBanner();
-    }
+  // ========================================================================
+  // Offline banner
+  // ========================================================================
+
+  var offlineBanner = document.getElementById("offline-banner");
+
+  function syncOfflineBanner() {
+    if (!offlineBanner) return;
+    offlineBanner.hidden = navigator.onLine;
   }
 
-  handleOnline() {
-    this.isOnline = true;
-    this.hideOfflineBanner();
-    this.showToast("Back online!", "success");
-    this.processQueue();
-  }
+  window.addEventListener("online", syncOfflineBanner);
+  window.addEventListener("offline", syncOfflineBanner);
+  syncOfflineBanner();
 
-  handleOffline() {
-    this.isOnline = false;
-    this.showOfflineBanner();
-    this.showToast("You are offline. Some features may be limited.", "info");
-  }
+  // ========================================================================
+  // Theme
+  //
+  // The theme itself is applied by an inline script in <head>, before first
+  // paint — this only wires up the button and keeps it in sync. Nothing here
+  // sets the initial theme, or the page would flash the wrong one.
+  // ========================================================================
 
-  showOfflineBanner() {
-    const banner = document.getElementById("offline-notification");
-    if (banner) {
-      banner.style.display = "flex";
-    }
-  }
+  var THEME_KEY = "theme";
+  var THEME_COLORS = { light: "#FAF8F4", dark: "#14130F" };
 
-  hideOfflineBanner() {
-    const banner = document.getElementById("offline-notification");
-    if (banner) {
-      banner.style.display = "none";
-    }
-  }
+  var themeToggle = document.getElementById("theme-toggle");
+  var themeColorMeta = document.querySelector('meta[name="theme-color"]');
 
-  addToQueue(data) {
-    this.offlineQueue.push(data);
-    this.saveQueue();
-  }
-
-  async processQueue() {
-    while (this.offlineQueue.length > 0 && this.isOnline) {
-      const data = this.offlineQueue[0];
-      try {
-        await this.sendMessage(data);
-        this.offlineQueue.shift();
-        this.saveQueue();
-      } catch (error) {
-        console.error("Failed to process queued message:", error);
-        break;
-      }
-    }
-  }
-
-  saveQueue() {
+  function storedTheme() {
     try {
-      localStorage.setItem("offlineQueue", JSON.stringify(this.offlineQueue));
-    } catch (e) {
-      console.warn("Failed to save offline queue:", e);
+      return window.localStorage.getItem(THEME_KEY);
+    } catch (error) {
+      // Private browsing, or storage disabled. Fall back to session-only.
+      return null;
     }
   }
 
-  loadQueue() {
+  function storeTheme(theme) {
     try {
-      const saved = localStorage.getItem("offlineQueue");
-      if (saved) {
-        this.offlineQueue = JSON.parse(saved);
-      }
-    } catch (e) {
-      console.warn("Failed to load offline queue:", e);
+      window.localStorage.setItem(THEME_KEY, theme);
+    } catch (error) {
+      /* nothing we can do; the choice just won't survive a reload */
     }
   }
 
-  async sendMessage(data) {
-    if (!CONFIG.API_ENDPOINT) {
-      throw new Error("No API endpoint configured yet.");
+  function applyTheme(theme, persist) {
+    root.setAttribute("data-theme", theme);
+
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute("content", THEME_COLORS[theme]);
     }
 
-    const response = await fetch(CONFIG.API_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(data),
+    if (themeToggle) {
+      var switchesToDark = theme === "light";
+      // Label says what the button does; aria-pressed says whether dark is on.
+      themeToggle.setAttribute(
+        "aria-label",
+        switchesToDark ? "Switch to dark theme" : "Switch to light theme",
+      );
+      themeToggle.setAttribute("aria-pressed", String(theme === "dark"));
+    }
+
+    if (persist) storeTheme(theme);
+  }
+
+  // Re-sync the button, the meta tag, and the document with whatever the
+  // inline script in <head> already decided.
+  applyTheme(
+    root.getAttribute("data-theme") === "dark" ? "dark" : "light",
+    false,
+  );
+
+  if (themeToggle) {
+    themeToggle.addEventListener("click", function () {
+      applyTheme(
+        root.getAttribute("data-theme") === "dark" ? "light" : "dark",
+        true,
+      );
     });
 
-    if (!response.ok) {
-      throw new Error("Failed to send message");
-    }
+    // Follow the OS only until the visitor has made an explicit choice.
+    // After that the saved theme wins, on this visit and every later one.
+    var schemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
-    return response.json();
-  }
-}
-
-// Initialize network manager
-const networkManager = new NetworkManager();
-
-// ============================================
-// TOAST NOTIFICATION SYSTEM
-// ============================================
-class ToastManager {
-  constructor() {
-    this.container = document.getElementById("toast-container");
-    if (!this.container) {
-      this.container = document.createElement("div");
-      this.container.id = "toast-container";
-      document.body.appendChild(this.container);
-    }
+    schemeQuery.addEventListener("change", function (event) {
+      if (storedTheme() !== null) return;
+      applyTheme(event.matches ? "dark" : "light", false);
+    });
   }
 
-  show(message, type = "info", duration = CONFIG.TOAST_DURATION) {
-    const toast = document.createElement("div");
-    toast.className = `toast ${type}`;
+  // ========================================================================
+  // Toasts
+  // ========================================================================
 
-    const icons = {
-      success: '<i class="fa-solid fa-circle-check"></i>',
-      error: '<i class="fa-solid fa-circle-exclamation"></i>',
-      info: '<i class="fa-solid fa-circle-info"></i>',
+  var toastRegion = document.getElementById("toast-region");
+
+  function showToast(message, type) {
+    if (!toastRegion) return;
+
+    var toast = document.createElement("div");
+    toast.className = "toast" + (type === "error" ? " is-error" : "");
+    toast.textContent = message;
+    toastRegion.appendChild(toast);
+
+    window.setTimeout(function () {
+      toast.remove();
+    }, 5000);
+  }
+
+  // ========================================================================
+  // Header state and scroll progress — throttled to one update per frame.
+  //
+  // The progress bar is drawn by .site-header::after as a scaleX transform,
+  // so updating it never triggers layout. The custom property is set on the
+  // header rather than on <html>: fewer elements inherit it, and the rule
+  // that reads it lives inside the header.
+  // ========================================================================
+
+  var header = document.getElementById("site-header");
+  var headerTicking = false;
+  var maxScroll = 0;
+
+  function measureScroll() {
+    maxScroll = Math.max(
+      0,
+      root.scrollHeight - window.innerHeight,
+    );
+  }
+
+  function updateHeader() {
+    headerTicking = false;
+
+    var scrolled = window.scrollY > 8;
+    if (header) {
+      header.classList.toggle("is-scrolled", scrolled);
+
+      var progress = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+      header.style.setProperty(
+        "--progress",
+        String(Math.min(1, Math.max(0, progress))),
+      );
+    }
+  }
+
+  function onScroll() {
+    if (headerTicking) return;
+    headerTicking = true;
+    window.requestAnimationFrame(updateHeader);
+  }
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  window.addEventListener(
+    "resize",
+    function () {
+      measureScroll();
+      onScroll();
+    },
+    { passive: true },
+  );
+
+  window.addEventListener("load", function () {
+    measureScroll();
+    updateHeader();
+  });
+
+  measureScroll();
+  updateHeader();
+
+  // ========================================================================
+  // Mobile navigation
+  // ========================================================================
+
+  var navToggle = document.getElementById("nav-toggle");
+  var navList = document.getElementById("nav-list");
+
+  function setMenu(open) {
+    if (!navToggle || !navList) return;
+
+    navList.classList.toggle("is-open", open);
+    navToggle.setAttribute("aria-expanded", String(open));
+    navToggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    document.body.classList.toggle("nav-open", open);
+  }
+
+  if (navToggle && navList) {
+    navToggle.addEventListener("click", function () {
+      setMenu(navToggle.getAttribute("aria-expanded") !== "true");
+    });
+
+    // Any link inside the drawer dismisses it.
+    navList.addEventListener("click", function (event) {
+      if (event.target.closest("a")) setMenu(false);
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key !== "Escape") return;
+      if (navToggle.getAttribute("aria-expanded") !== "true") return;
+
+      setMenu(false);
+      navToggle.focus();
+    });
+
+    // Clicking outside the drawer closes it.
+    document.addEventListener("click", function (event) {
+      if (navToggle.getAttribute("aria-expanded") !== "true") return;
+      if (navList.contains(event.target) || navToggle.contains(event.target)) {
+        return;
+      }
+      setMenu(false);
+    });
+  }
+
+  // ========================================================================
+  // Active section in the nav
+  //
+  // IntersectionObserver rather than a scroll handler: the previous build read
+  // offsetTop/clientHeight for every section on every scroll event, which
+  // forced a synchronous layout each time.
+  // ========================================================================
+
+  var navAnchors = Array.prototype.slice.call(
+    document.querySelectorAll('.nav-list a[href^="#"]'),
+  );
+
+  if (navAnchors.length && "IntersectionObserver" in window) {
+    var sectionById = {};
+
+    navAnchors.forEach(function (anchor) {
+      var section = document.querySelector(anchor.getAttribute("href"));
+      if (section && section.id) sectionById[section.id] = section;
+    });
+
+    var markCurrent = function (id) {
+      navAnchors.forEach(function (anchor) {
+        if (anchor.getAttribute("href") === "#" + id) {
+          anchor.setAttribute("aria-current", "true");
+        } else {
+          anchor.removeAttribute("aria-current");
+        }
+      });
     };
 
-    toast.innerHTML = `${icons[type] || icons.info} ${message}`;
-    this.container.appendChild(toast);
+    var navObserver = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) markCurrent(entry.target.id);
+        });
+      },
+      // A band across the middle of the viewport decides what's "current".
+      { rootMargin: "-45% 0px -50% 0px", threshold: 0 },
+    );
 
-    setTimeout(() => {
-      toast.style.opacity = "0";
-      toast.style.transform = "translateX(100%)";
-      toast.style.transition = "all 0.3s ease";
-      setTimeout(() => toast.remove(), 300);
-    }, duration);
+    Object.keys(sectionById).forEach(function (id) {
+      navObserver.observe(sectionById[id]);
+    });
   }
-}
 
-const toastManager = new ToastManager();
+  // ========================================================================
+  // Motion
+  //
+  // Two of the three paths are implemented here; reveal-off needs no code at
+  // all, because the stylesheet already shows everything.
+  //
+  // Whichever path runs, the hidden state is behind .js-enabled on <html>,
+  // set by the inline script in <head>. With scripting off the class is never
+  // added and the page renders fully visible.
+  // ========================================================================
 
-// Make showToast globally available
-function showToast(message, type, duration) {
-  toastManager.show(message, type, duration);
-}
+  var revealElements = document.querySelectorAll(".reveal");
+  var heroChildren = document.querySelectorAll(".hero-copy > *, .hero-portrait");
 
-// ============================================
-// CUSTOM CURSOR
-// ============================================
-const cursor = document.getElementById("cursor");
-const trail = document.getElementById("cursor-trail");
+  // Everything either path can leave transparent. Used by the rescue below
+  // and by the reduced-motion change handler.
+  var ANIMATED = [
+    ".reveal",
+    ".reveal > p",
+    ".section-title",
+    ".section-lede",
+    ".section-more",
+    ".project-num",
+    ".project-title",
+    ".project-tagline",
+    ".project-desc",
+    ".project-stack",
+    ".project-links",
+    ".project-media",
+    ".timeline > li",
+    ".skill-group",
+    ".skill-learning",
+    ".colophon-list > li",
+    ".contact-list > li",
+    ".contact-cv",
+    ".contact-form",
+    ".hero-copy > *",
+    ".hero-portrait",
+  ].join(",");
 
-if (cursor && trail) {
-  let mx = 0,
-    my = 0,
-    tx = 0,
-    ty = 0;
+  function animatedElements() {
+    return document.querySelectorAll(ANIMATED);
+  }
 
-  document.addEventListener("mousemove", (e) => {
-    mx = e.clientX;
-    my = e.clientY;
-    cursor.style.left = mx + "px";
-    cursor.style.top = my + "px";
-  });
-
-  (function animTrail() {
-    tx += (mx - tx) * 0.14;
-    ty += (my - ty) * 0.14;
-    trail.style.left = tx + "px";
-    trail.style.top = ty + "px";
-    requestAnimationFrame(animTrail);
-  })();
-
-  // Add cursor hover effects to interactive elements
-  const hoverElements = document.querySelectorAll(
-    "a, button, .pill, .skill-cat, .project-card, .stat-card",
-  );
-  hoverElements.forEach((el) => {
-    el.addEventListener("mouseenter", () => {
-      cursor.classList.add("cursor-hover");
-      trail.classList.add("trail-hover");
+  // Force everything visible and strip every inline style GSAP left behind.
+  function revealAll() {
+    Array.prototype.forEach.call(revealElements, function (el) {
+      el.classList.add("is-visible");
     });
-    el.addEventListener("mouseleave", () => {
-      cursor.classList.remove("cursor-hover");
-      trail.classList.remove("trail-hover");
-    });
-  });
-}
 
-// ============================================
-// TYPED TEXT EFFECT
-// ============================================
-const phrases = [
-  "beautiful UIs.",
-  "fast APIs.",
-  "full web apps.",
-  "things that matter.",
-];
-let pi = 0,
-  ci = 0,
-  del = false;
+    if (typeof window.gsap === "undefined") return;
 
-const typedEl = document.getElementById("typed-text");
+    var targets = animatedElements();
+    window.gsap.killTweensOf(targets);
+    window.gsap.set(targets, { clearProps: "all" });
+  }
 
-function typeLoop() {
-  if (!typedEl) return;
+  // ------------------------------------------------------------------
+  // Fallback: IntersectionObserver toggling a class the stylesheet animates
+  // ------------------------------------------------------------------
 
-  const phrase = phrases[pi];
-  if (!del) {
-    typedEl.textContent = phrase.slice(0, ++ci);
-    if (ci === phrase.length) {
-      del = true;
-      setTimeout(typeLoop, 1600);
+  function startCssReveal() {
+    if (!revealElements.length) return;
+
+    if (!("IntersectionObserver" in window)) {
+      revealAll();
       return;
     }
-  } else {
-    typedEl.textContent = phrase.slice(0, --ci);
-    if (ci === 0) {
-      del = false;
-      pi = (pi + 1) % phrases.length;
-    }
+
+    var revealObserver = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          revealObserver.unobserve(entry.target);
+        });
+      },
+      { threshold: 0, rootMargin: "0px 0px -12% 0px" },
+    );
+
+    Array.prototype.forEach.call(revealElements, function (el) {
+      revealObserver.observe(el);
+    });
   }
-  setTimeout(typeLoop, del ? 58 : 88);
-}
 
-typeLoop();
+  // ------------------------------------------------------------------
+  // GSAP + ScrollTrigger
+  // ------------------------------------------------------------------
 
-// ============================================
-// COUNTER ANIMATION
-// ============================================
-function animateCounters() {
-  document.querySelectorAll("[data-count]").forEach((el) => {
-    // Prevent multiple animations
-    if (el.dataset.animated === "true") return;
-    el.dataset.animated = "true";
+  function initMotion() {
+    var gsap = window.gsap;
+    var ScrollTrigger = window.ScrollTrigger;
 
-    const target = +el.dataset.count;
-    let cur = 0;
-    const increment = target / 40;
+    gsap.registerPlugin(ScrollTrigger);
 
-    const timer = setInterval(() => {
-      cur += increment;
-      if (cur >= target) {
-        cur = target;
-        clearInterval(timer);
-      }
-      el.textContent = Math.floor(cur) + (target >= 10 ? "+" : "");
-    }, 38);
-  });
-}
+    // The mobile URL bar collapsing fires a resize that would otherwise make
+    // every trigger re-measure mid-scroll.
+    ScrollTrigger.config({ ignoreMobileResize: true });
 
-// ============================================
-// REVEAL ANIMATIONS (Intersection Observer)
-// ============================================
-const revealObserver = new IntersectionObserver(
-  (entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("visible");
+    var EASE = "power2.out";
 
-        // Animate counters if present
-        if (entry.target.querySelector("[data-count]")) {
-          animateCounters();
+    // --- Hero. Plays on load; it is above the fold and never waits on a
+    // scroll. The start state is applied in this same synchronous block as
+    // the class swap above, so no frame is ever painted in between.
+    var heroTimeline = gsap.timeline({
+      defaults: { ease: EASE, duration: 0.7 },
+    });
+
+    if (heroChildren.length) {
+      heroTimeline.from(heroChildren, {
+        y: 16,
+        autoAlpha: 0,
+        stagger: { amount: 0.36 },
+        clearProps: "all",
+      });
+    }
+
+    // The two hero figures count up to exactly what the markup already
+    // claims — the suffix ("+") and the final value are read from the DOM
+    // rather than hard-coded, so the numbers can never drift apart.
+    Array.prototype.forEach.call(
+      document.querySelectorAll(".hero-stats dd"),
+      function (el) {
+        var finalText = el.textContent.trim();
+        var target = parseInt(finalText, 10);
+        if (!target) return;
+
+        var suffix = finalText.replace(/[0-9]/g, "");
+        var counter = { value: 0 };
+
+        heroTimeline.to(
+          counter,
+          {
+            value: target,
+            duration: 0.9,
+            ease: "power1.out",
+            onUpdate: function () {
+              el.textContent = Math.round(counter.value) + suffix;
+            },
+            onComplete: function () {
+              el.textContent = finalText;
+            },
+          },
+          "-=0.4",
+        );
+      },
+    );
+
+    // --- Section headings and standalone blocks, one trigger per container.
+    // `amount` distributes the stagger across a fixed window instead of
+    // multiplying a per-item delay, so a section with seven paragraphs and
+    // one with two take the same time to settle.
+    var SECTION_TARGETS = [
+      ".section-title",
+      ".section-lede",
+      ".section-more",
+      ".reveal > p",
+      ".timeline > li",
+      ".skill-group",
+      ".skill-learning",
+      ".colophon-list > li",
+      ".contact-list > li",
+      ".contact-cv",
+      ".contact-form",
+    ].join(",");
+
+    Array.prototype.forEach.call(revealElements, function (container) {
+      var blocks = container.querySelectorAll(SECTION_TARGETS);
+      if (!blocks.length) return;
+
+      gsap.from(blocks, {
+        y: 18,
+        autoAlpha: 0,
+        duration: 0.6,
+        ease: EASE,
+        stagger: { amount: 0.34 },
+        clearProps: "all",
+        scrollTrigger: {
+          trigger: container,
+          start: "top 82%",
+          once: true,
+        },
+      });
+    });
+
+    // --- Case studies. Each project animates as it arrives rather than on
+    // a single long stagger, so the last one is not still moving when it is
+    // already on screen. The screenshot settles with a touch of scale while
+    // the text slides.
+    Array.prototype.forEach.call(
+      document.querySelectorAll(".project"),
+      function (project) {
+        var text = project.querySelectorAll(
+          ".project-num,.project-title,.project-tagline,.project-desc," +
+            ".project-stack,.project-links",
+        );
+        var media = project.querySelector(".project-media");
+
+        if (!text.length && !media) return;
+
+        var projectTimeline = gsap.timeline({
+          scrollTrigger: {
+            trigger: project,
+            start: "top 85%",
+            once: true,
+          },
+        });
+
+        if (text.length) {
+          projectTimeline.from(text, {
+            y: 20,
+            autoAlpha: 0,
+            duration: 0.6,
+            ease: EASE,
+            stagger: { amount: 0.28 },
+            clearProps: "all",
+          });
         }
 
-        revealObserver.unobserve(entry.target);
-      }
-    });
-  },
-  {
-    threshold: 0.1,
-    rootMargin: "0px 0px -50px 0px",
-  },
-);
+        if (media) {
+          projectTimeline.from(
+            media,
+            {
+              autoAlpha: 0,
+              scale: 0.985,
+              transformOrigin: "50% 0%",
+              duration: 0.7,
+              ease: EASE,
+              clearProps: "all",
+            },
+            text.length ? "-=0.4" : 0,
+          );
+        }
+      },
+    );
 
-document
-  .querySelectorAll(".reveal, .reveal-left, .reveal-right")
-  .forEach((el) => {
-    revealObserver.observe(el);
-  });
-
-// ============================================
-// NAVIGATION SCROLL EFFECT
-// ============================================
-window.addEventListener("scroll", () => {
-  const nav = document.getElementById("navbar");
-  if (!nav) return;
-
-  if (window.scrollY > 50) {
-    nav.style.background = "rgba(248,247,242,0.97)";
-    nav.style.boxShadow = "0 2px 20px rgba(29,158,117,0.1)";
-  } else {
-    nav.style.background = "rgba(248,247,242,0.82)";
-    nav.style.boxShadow = "none";
-  }
-
-  // Active navigation highlighting
-  updateActiveNavLink();
-});
-
-// Active navigation link based on scroll position
-function updateActiveNavLink() {
-  const sections = document.querySelectorAll("section[id]");
-  const navLinks = document.querySelectorAll(".nav-links a:not(.nav-cta)");
-
-  let currentSection = "";
-
-  sections.forEach((section) => {
-    const sectionTop = section.offsetTop - 100;
-    const sectionHeight = section.clientHeight;
-
-    if (
-      window.scrollY >= sectionTop &&
-      window.scrollY < sectionTop + sectionHeight
-    ) {
-      currentSection = section.getAttribute("id");
+    // Fraunces loads asynchronously and changes every measurement on the
+    // page when it swaps in. Anything ScrollTrigger measured before that is
+    // wrong, so re-measure once the fonts have settled.
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () {
+        ScrollTrigger.refresh();
+      });
     }
-  });
 
-  navLinks.forEach((link) => {
-    link.style.color = "";
-    if (link.getAttribute("href") === `#${currentSection}`) {
-      link.style.color = "var(--teal-deep)";
-    }
-  });
-}
+    // --- Rescue. If a trigger never fires — a measurement taken against a
+    // layout that no longer exists, a browser quirk — the content under it
+    // would stay invisible. Anything still transparent but already inside
+    // the viewport a few seconds in gets shown. In the ordinary case this
+    // finds nothing and costs one pass over a short list.
+    window.setTimeout(function () {
+      var viewportHeight = window.innerHeight;
 
-// ============================================
-// MOBILE MENU
-// ============================================
-function toggleMenu() {
-  const navLinks = document.getElementById("navLinks");
-  const burger = document.getElementById("burger");
+      Array.prototype.forEach.call(animatedElements(), function (el) {
+        var box = el.getBoundingClientRect();
+        if (box.top > viewportHeight || box.bottom < 0) return;
+        if (window.getComputedStyle(el).opacity !== "0") return;
 
-  if (!navLinks || !burger) return;
+        console.warn("Reveal safety net caught an unanimated element:", el);
+        gsap.set(el, { clearProps: "all" });
+      });
+    }, 3000);
 
-  navLinks.classList.toggle("open");
+    // If the visitor turns on reduced motion mid-session, stop dead.
+    reduceMotion.addEventListener("change", function (event) {
+      if (!event.matches) return;
 
-  // Update ARIA attributes
-  const isOpen = navLinks.classList.contains("open");
-  burger.setAttribute("aria-expanded", isOpen);
-
-  // Animate burger icon
-  const spans = burger.querySelectorAll("span");
-  if (isOpen) {
-    spans[0].style.transform = "rotate(45deg) translate(5px, 5px)";
-    spans[1].style.opacity = "0";
-    spans[2].style.transform = "rotate(-45deg) translate(5px, -5px)";
-  } else {
-    spans[0].style.transform = "none";
-    spans[1].style.opacity = "1";
-    spans[2].style.transform = "none";
-  }
-}
-
-// Close mobile menu when clicking a link
-document
-  .getElementById("navLinks")
-  ?.querySelectorAll("a")
-  .forEach((a) => {
-    a.addEventListener("click", () => {
-      document.getElementById("navLinks")?.classList.remove("open");
-      const burger = document.getElementById("burger");
-      if (burger) {
-        burger.setAttribute("aria-expanded", "false");
-        const spans = burger.querySelectorAll("span");
-        spans[0].style.transform = "none";
-        spans[1].style.opacity = "1";
-        spans[2].style.transform = "none";
-      }
-    });
-  });
-
-// ============================================
-// RESUME DOWNLOAD TRACKING
-// ============================================
-function trackResumeDownload() {
-  // Google Analytics event tracking
-  if (typeof gtag !== "undefined") {
-    gtag("event", "download", {
-      event_category: "resume",
-      event_label: "Resume Download",
+      ScrollTrigger.getAll().forEach(function (trigger) {
+        trigger.kill();
+      });
+      gsap.globalTimeline.clear();
+      revealAll();
     });
   }
 
-  // Show success message
-  showToast("Resume download started! 📄", "success", 3000);
-}
-
-// Add download tracking to resume buttons
-document.querySelectorAll("[download]").forEach((btn) => {
-  btn.addEventListener("click", trackResumeDownload);
-});
-
-// Handle resume download errors
-document
-  .getElementById("resume-download-btn")
-  ?.addEventListener("click", async function (e) {
+  if (revealPath === "reveal-gsap") {
     try {
-      const response = await fetch(CONFIG.RESUME_PATH, { method: "HEAD" });
-      if (!response.ok) {
-        e.preventDefault();
-        showToast(
-          "Resume file not found. Please contact me directly.",
-          "error",
-        );
-      }
+      initMotion();
     } catch (error) {
-      // If offline, allow the download attempt anyway
-      if (navigator.onLine) {
-        e.preventDefault();
-        showToast(
-          "Unable to download resume. Please try again later.",
-          "error",
-        );
-      }
+      // GSAP parsed but refused to start. Swap to the fallback and let the
+      // stylesheet do the work, rather than leaving the page blank.
+      console.error("Motion init failed; falling back to CSS.", error);
+      setRevealPath("reveal-css");
+      startCssReveal();
     }
-  });
-
-// ============================================
-// CONTACT FORM HANDLING
-// ============================================
-let formCooldown = false;
-
-async function sendMessage(event) {
-  event.preventDefault();
-
-  // Check cooldown
-  if (formCooldown) {
-    showToast("Please wait before sending another message.", "info");
-    return;
+  } else if (revealPath === "reveal-css") {
+    startCssReveal();
   }
 
-  // Get form elements
-  const form = document.getElementById("contactForm");
-  const nameInput = document.getElementById("f-name");
-  const emailInput = document.getElementById("f-email");
-  const subjectInput = document.getElementById("f-subject");
-  const messageInput = document.getElementById("f-message");
-  const honeypotInput = document.getElementById("honeypot");
-  const submitBtn = document.getElementById("submit-btn");
-  const submitText = document.getElementById("submit-text");
-  const submitLoading = document.getElementById("submit-loading");
-  const formMsg = document.getElementById("form-msg");
+  // ========================================================================
+  // Project filters
+  //
+  // Only present on projects.html. The controls are hidden by CSS unless
+  // scripting is available, so with JS off the full list simply renders.
+  //
+  // Filtering has to cooperate with the reveal system. Every .project gets its
+  // own ScrollTrigger, and an article hidden at load measures as zero-height —
+  // so its tween either fires against a collapsed box or never fires at all,
+  // leaving the contents at opacity 0. Anything a filter brings back is
+  // therefore settled directly, rather than waiting on a trigger that has
+  // already been and gone.
+  // ========================================================================
 
-  // Clear previous messages
-  formMsg.textContent = "";
-  formMsg.className = "";
+  var filterBar = document.getElementById("project-filters");
 
-  // Honeypot check (bot prevention)
-  if (honeypotInput && honeypotInput.value) {
-    // Silently reject - don't tell the bot
-    console.log("Honeypot triggered - possible bot submission");
-    formMsg.textContent =
-      "Message sent successfully! I'll get back to you soon.";
-    formMsg.className = "success";
-    form.reset();
-    return;
+  if (filterBar) {
+    var filterButtons = Array.prototype.slice.call(
+      filterBar.querySelectorAll(".filter-btn"),
+    );
+    var filterable = Array.prototype.slice.call(
+      document.querySelectorAll(".project[data-category]"),
+    );
+    var filterStatus = document.getElementById("filter-status");
+
+    var PROJECT_PARTS =
+      ".project-num,.project-title,.project-tagline,.project-desc," +
+      ".project-stack,.project-links,.project-media";
+
+    function settleProject(project) {
+      project.classList.add("is-visible");
+
+      if (typeof window.gsap === "undefined") return;
+
+      window.gsap.set(project.querySelectorAll(PROJECT_PARTS), {
+        clearProps: "all",
+      });
+    }
+
+    var applyFilter = function (category) {
+      var visible = [];
+
+      filterable.forEach(function (project) {
+        var matches =
+          category === "all" ||
+          project.getAttribute("data-category") === category;
+
+        project.hidden = !matches;
+        if (matches) visible.push(project);
+      });
+
+      visible.forEach(settleProject);
+
+      // Hiding articles changes the page height, so every trigger below the
+      // list is measuring against a layout that no longer exists.
+      if (typeof window.ScrollTrigger !== "undefined") {
+        window.ScrollTrigger.refresh();
+      }
+
+      if (filterStatus) {
+        filterStatus.textContent =
+          visible.length +
+          (visible.length === 1 ? " project shown." : " projects shown.");
+      }
+    };
+
+    filterButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        filterButtons.forEach(function (other) {
+          other.setAttribute("aria-pressed", String(other === button));
+        });
+
+        applyFilter(button.getAttribute("data-filter"));
+      });
+    });
   }
 
-  // Get values
-  const name = nameInput.value.trim();
-  const email = emailInput.value.trim();
-  const subject = subjectInput.value.trim();
-  const message = messageInput.value.trim();
+  // ========================================================================
+  // Resume download feedback
+  // ========================================================================
 
-  // Validation
-  if (!name || !email || !message) {
-    formMsg.textContent =
-      "Please fill in all required fields (name, email, and message).";
-    formMsg.className = "error";
-    return;
-  }
+  Array.prototype.forEach.call(
+    document.querySelectorAll('a[href$=".pdf"][download]'),
+    function (link) {
+      link.addEventListener("click", function () {
+        showToast("Downloading CV…");
+      });
+    },
+  );
 
-  // Email validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    formMsg.textContent = "Please enter a valid email address.";
-    formMsg.className = "error";
-    return;
-  }
+  // ========================================================================
+  // Contact form
+  //
+  // The form carries a real action/method, so with JS unavailable the browser
+  // posts it to Formspree directly. With JS we validate first and post via
+  // fetch so the visitor stays on the page.
+  // ========================================================================
 
-  // Show loading state
-  submitBtn.disabled = true;
-  submitText.style.display = "none";
-  submitLoading.style.display = "inline";
+  var form = document.getElementById("contact-form");
 
-  const formData = {
-    name,
-    email,
-    subject: subject || "No subject",
-    message,
-    timestamp: new Date().toISOString(),
+  if (!form) return;
+
+  var submitButton = document.getElementById("submit-btn");
+  var submitLabel = document.getElementById("submit-label");
+  var submitBusy = document.getElementById("submit-busy");
+  var statusRegion = document.getElementById("form-status");
+
+  var EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  var fieldRules = {
+    "f-name": function (value) {
+      return value ? "" : "Enter your name so I know who I'm replying to.";
+    },
+    "f-email": function (value) {
+      if (!value) return "Enter your email address so I can reply.";
+      if (!EMAIL_PATTERN.test(value)) {
+        return "That doesn't look like a valid email address.";
+      }
+      return "";
+    },
+    "f-message": function (value) {
+      return value ? "" : "Enter a message before sending.";
+    },
   };
 
-  if (!CONFIG.API_ENDPOINT) {
-    formMsg.textContent =
-      "The contact form is currently being wired up. Please email me directly at alimiazeez4@gmail.com.";
-    formMsg.className = "info";
-    showToast(
-      "Contact form is disabled for now. Please email me directly.",
-      "info",
-    );
-    return;
+  function fieldErrorElement(input) {
+    return document.getElementById(input.id + "-error");
   }
 
-  // Check if online
-  if (!navigator.onLine) {
-    // Queue the message for later
-    networkManager.addToQueue(formData);
-    formMsg.textContent =
-      "You're offline. Your message will be sent when you're back online.";
-    formMsg.className = "info";
-    form.reset();
-    resetSubmitButton();
-    return;
-  }
+  function setFieldError(input, message) {
+    var errorEl = fieldErrorElement(input);
 
-  try {
-    const response = await fetch(CONFIG.API_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      // Success
-      formMsg.textContent =
-        "Message sent successfully! I'll get back to you within 24 hours. 🚀";
-      formMsg.className = "success";
-      form.reset();
-      showToast("Message sent! Check your inbox for confirmation.", "success");
-
-      // Google Analytics tracking
-      if (typeof gtag !== "undefined") {
-        gtag("event", "form_submission", {
-          event_category: "contact",
-          event_label: "Contact Form",
-        });
-      }
-
-      // Set cooldown
-      formCooldown = true;
-      setTimeout(() => {
-        formCooldown = false;
-      }, CONFIG.FORM_COOLDOWN);
+    if (message) {
+      input.setAttribute("aria-invalid", "true");
+      if (errorEl) errorEl.textContent = message;
     } else {
-      throw new Error(data.message || "Failed to send message");
+      input.removeAttribute("aria-invalid");
+      if (errorEl) errorEl.textContent = "";
     }
-  } catch (error) {
-    console.error("Form submission error:", error);
-
-    // Show error message
-    formMsg.textContent =
-      "Failed to send message. Please try again or email me directly at alimiazeez4@gmail.com";
-    formMsg.className = "error";
-    showToast("Failed to send message. Please try again.", "error");
-
-    // Save failed submission to localStorage for retry
-    saveFailedSubmission(formData);
-  } finally {
-    resetSubmitButton();
   }
-}
 
-function resetSubmitButton() {
-  const submitBtn = document.getElementById("submit-btn");
-  const submitText = document.getElementById("submit-text");
-  const submitLoading = document.getElementById("submit-loading");
+  function validateField(input) {
+    var rule = fieldRules[input.id];
+    if (!rule) return true;
 
-  if (submitBtn) submitBtn.disabled = false;
-  if (submitText) submitText.style.display = "inline";
-  if (submitLoading) submitLoading.style.display = "none";
-}
-
-function saveFailedSubmission(data) {
-  try {
-    const failedSubmissions = JSON.parse(
-      localStorage.getItem("failedSubmissions") || "[]",
-    );
-    failedSubmissions.push(data);
-    localStorage.setItem(
-      "failedSubmissions",
-      JSON.stringify(failedSubmissions),
-    );
-  } catch (e) {
-    console.warn("Failed to save submission:", e);
+    var message = rule(input.value.trim());
+    setFieldError(input, message);
+    return !message;
   }
-}
 
-// Retry failed submissions when coming online
-window.addEventListener("online", () => {
-  const failedSubmissions = JSON.parse(
-    localStorage.getItem("failedSubmissions") || "[]",
-  );
-  if (failedSubmissions.length > 0) {
-    showToast("Retrying failed message submissions...", "info");
+  // Clear a field's error as soon as the visitor starts fixing it.
+  Object.keys(fieldRules).forEach(function (id) {
+    var input = document.getElementById(id);
+    if (!input) return;
 
-    failedSubmissions.forEach(async (data) => {
-      try {
-        const response = await fetch(CONFIG.API_ENDPOINT, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-
-        if (response.ok) {
-          // Remove from failed list
-          const updated = JSON.parse(
-            localStorage.getItem("failedSubmissions") || "[]",
-          );
-          const filtered = updated.filter(
-            (item) => item.timestamp !== data.timestamp,
-          );
-          localStorage.setItem("failedSubmissions", JSON.stringify(filtered));
-        }
-      } catch (error) {
-        console.error("Failed to retry submission:", error);
-      }
+    input.addEventListener("input", function () {
+      if (input.getAttribute("aria-invalid") === "true") setFieldError(input, "");
     });
-  }
-});
 
-// ============================================
-// SMOOTH SCROLL WITH OFFSET
-// ============================================
-document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-  anchor.addEventListener("click", function (e) {
-    e.preventDefault();
-    const targetId = this.getAttribute("href");
-    if (targetId === "#") return;
-
-    const target = document.querySelector(targetId);
-    if (target) {
-      const offset = 80; // Navbar height offset
-      const targetPosition =
-        target.getBoundingClientRect().top + window.pageYOffset - offset;
-
-      window.scrollTo({
-        top: targetPosition,
-        behavior: "smooth",
-      });
-    }
+    input.addEventListener("blur", function () {
+      if (input.value.trim()) validateField(input);
+    });
   });
-});
 
-// ============================================
-// EMAIL COPY TO CLIPBOARD
-// ============================================
-document
-  .querySelector('.contact-item-text a[href^="mailto:"]')
-  ?.addEventListener("click", function (e) {
-    const email = this.getAttribute("href").replace("mailto:", "");
+  function setBusy(busy) {
+    if (submitButton) submitButton.disabled = busy;
+    if (submitLabel) submitLabel.hidden = busy;
+    if (submitBusy) submitBusy.hidden = !busy;
+  }
 
-    // Copy to clipboard
-    navigator.clipboard
-      .writeText(email)
-      .then(() => {
-        showToast("Email copied to clipboard! 📋", "success", 2000);
+  function setStatus(message, kind) {
+    if (!statusRegion) return;
+    statusRegion.textContent = message;
+    statusRegion.className = "form-status" + (kind ? " is-" + kind : "");
+  }
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    setStatus("", "");
+
+    var invalid = [];
+
+    Object.keys(fieldRules).forEach(function (id) {
+      var input = document.getElementById(id);
+      if (input && !validateField(input)) invalid.push(input);
+    });
+
+    if (invalid.length) {
+      invalid[0].focus();
+      setStatus("Please fix the highlighted fields and try again.", "error");
+      return;
+    }
+
+    setBusy(true);
+
+    var data = new FormData(form);
+    var name = String(data.get("name") || "").trim();
+    var subject = String(data.get("subject") || "").trim();
+
+    // Formspree special field — controls the notification email's subject line.
+    data.set("_subject", "Portfolio enquiry: " + (subject || "no subject") + " — " + name);
+
+    fetch(form.action, {
+      method: "POST",
+      body: data,
+      headers: { Accept: "application/json" },
+    })
+      .then(function (response) {
+        if (response.ok) return null;
+
+        return response
+          .json()
+          .catch(function () {
+            return null;
+          })
+          .then(function (body) {
+            var detail = body && body.errors && body.errors[0];
+            throw new Error(
+              (detail && detail.message) || "Formspree returned " + response.status,
+            );
+          });
       })
-      .catch(() => {
-        // Fallback - just open email client
+      .then(function () {
+        form.reset();
+        Object.keys(fieldRules).forEach(function (id) {
+          var input = document.getElementById(id);
+          if (input) setFieldError(input, "");
+        });
+        setStatus("Message sent. I'll reply within a day.", "success");
+        showToast("Message sent.");
+      })
+      .catch(function (error) {
+        var offline = !navigator.onLine;
+
+        setStatus(
+          "Your message wasn't sent. " +
+            (offline
+              ? "You appear to be offline — reconnect and try again"
+              : "Please try again") +
+            ", or email me directly at alimiazeez4@gmail.com.",
+          "error",
+        );
+        showToast("Message not sent.", "error");
+        console.error("Contact form submission failed:", error);
+      })
+      .then(function () {
+        setBusy(false);
       });
   });
-
-// ============================================
-// PERFORMANCE OPTIMIZATION
-// ============================================
-
-// Lazy load images that aren't visible yet
-const lazyImages = document.querySelectorAll('img[loading="lazy"]');
-if ("loading" in HTMLImageElement.prototype) {
-  // Browser supports native lazy loading
-  lazyImages.forEach((img) => {
-    img.src = img.dataset.src || img.src;
-  });
-} else {
-  // Fallback for browsers that don't support lazy loading
-  const lazyImageObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        const img = entry.target;
-        img.src = img.dataset.src || img.src;
-        lazyImageObserver.unobserve(img);
-      }
-    });
-  });
-
-  lazyImages.forEach((img) => lazyImageObserver.observe(img));
-}
-
-// ============================================
-// ERROR HANDLING & LOGGING
-// ============================================
-window.addEventListener("error", function (event) {
-  console.error("Global error:", event.error);
-
-  // You can send errors to your analytics or error tracking service
-  if (typeof gtag !== "undefined") {
-    gtag("event", "exception", {
-      description: event.error ? event.error.message : "Unknown error",
-      fatal: false,
-    });
-  }
-});
-
-// Handle unhandled promise rejections
-window.addEventListener("unhandledrejection", function (event) {
-  console.error("Unhandled promise rejection:", event.reason);
-});
-
-// ============================================
-// INITIALIZATION
-// ============================================
-console.log(
-  "%c🚀 HPTech Portfolio Loaded! %cBuilt by Alimi Azeez Opeyemi",
-  "color: #1D9E75; font-size: 1.2rem; font-weight: bold;",
-  "color: #D85A30;",
-);
-console.log(
-  "%c💡 Tip: Check the network tab to see the service worker in action!",
-  "color: #888780;",
-);
-
-// Log performance metrics
-window.addEventListener("load", () => {
-  if (window.performance) {
-    const timing = window.performance.timing;
-    const loadTime = timing.loadEventEnd - timing.navigationStart;
-    console.log(`%c⏱️ Page loaded in ${loadTime}ms`, "color: #1D9E75;");
-  }
-});
+})();

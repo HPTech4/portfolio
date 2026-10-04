@@ -1,177 +1,246 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Offline - HPTech Portfolio</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #F8F7F2 0%, #EFF8F5 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-        
-        .offline-container {
-            background: white;
-            border-radius: 24px;
-            padding: 3rem;
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(29, 158, 117, 0.1);
-            border: 2px solid rgba(29, 158, 117, 0.1);
-        }
-        
-        .offline-icon {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-            color: #D85A30;
-        }
-        
-        h1 {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 2rem;
-            color: #085041;
-            margin-bottom: 0.5rem;
-        }
-        
-        .subtitle {
-            color: #1D9E75;
-            font-family: 'Space Mono', monospace;
-            font-size: 0.9rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        p {
-            color: #444441;
-            line-height: 1.8;
-            margin-bottom: 2rem;
-        }
-        
-        .actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            padding: 0.8rem 1.8rem;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-decoration: none;
-            transition: all 0.3s;
-            border: 2px solid transparent;
-            cursor: pointer;
-        }
-        
-        .btn-primary {
-            background: #1D9E75;
-            color: white;
-            box-shadow: 0 4px 20px rgba(29, 158, 117, 0.3);
-        }
-        
-        .btn-primary:hover {
-            background: #085041;
-            transform: translateY(-2px);
-        }
-        
-        .btn-outline {
-            border-color: #D85A30;
-            color: #D85A30;
-            background: transparent;
-        }
-        
-        .btn-outline:hover {
-            background: #D85A30;
-            color: white;
-            transform: translateY(-2px);
-        }
-        
-        .status {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: #FAECE7;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            color: #D85A30;
-            margin-bottom: 2rem;
-        }
-        
-        .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #D85A30;
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-        
-        .cached-info {
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid rgba(29, 158, 117, 0.1);
-            font-size: 0.85rem;
-            color: #888780;
-        }
-    </style>
-</head>
-<body>
-    <div class="offline-container">
-        <div class="offline-icon">📡</div>
-        <h1>You're Offline</h1>
-        <div class="subtitle">// HPTech</div>
-        
-        <div class="status">
-            <span class="dot"></span>
-            No internet connection
-        </div>
-        
-        <p>
-            Don't worry! Some parts of the portfolio are still available. 
-            You can browse cached pages and projects. The contact form will 
-            save your message and send it when you're back online.
-        </p>
-        
-        <div class="actions">
-            <a href="/" class="btn btn-primary">← Go to Homepage</a>
-            <button onclick="window.location.reload()" class="btn btn-outline">Try Again</button>
-        </div>
-        
-        <div class="cached-info">
-            <small> Cached content is available for offline viewing</small>
-        </div>
-    </div>
-    
+  <head>
+    <meta charset="UTF-8" />
     <script>
-        // Check connectivity and reload if back online
-        window.addEventListener('online', () => {
-            window.location.href = '/';
-        });
-        
-        // Service Worker registration check
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.ready.then(registration => {
-                console.log('Service Worker is ready');
-            });
+      // Matches the theme rules in style.css so the offline shell doesn't
+      // contradict the page the visitor was just reading.
+      (function () {
+        var theme;
+        try {
+          var saved = localStorage.getItem("theme");
+          theme =
+            saved === "light" || saved === "dark"
+              ? saved
+              : window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+        } catch (error) {
+          theme = "light";
         }
+        document.documentElement.setAttribute("data-theme", theme);
+      })();
     </script>
-</body>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Offline — Alimi Azeez Opeyemi</title>
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#FAF8F4" />
+    <style>
+      /* Styles are inlined on purpose: this page is served from the cache with
+         no network, so it cannot depend on /style.css or Google Fonts. Fraunces
+         is named first so it's used when it's already in the font cache, with
+         Georgia as the offline fallback. */
+
+      :root,
+      :root[data-theme="light"] {
+        color-scheme: light;
+        --bg: #faf8f4;
+        --surface: #ffffff;
+        --tint: #f2efe8;
+        --line: #e5e1d8;
+        --text: #1c1a17;
+        --text-muted: #6b6862;
+        --accent: #1f4d3a;
+        --accent-hover: #163829;
+        --on-accent: #ffffff;
+      }
+
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --bg: #14130f;
+        --surface: #1e1c18;
+        --tint: #221f1b;
+        --line: #2e2b26;
+        --text: #f2efe8;
+        --text-muted: #a8a49b;
+        --accent: #4a9e7a;
+        --accent-hover: #5fb18c;
+        --on-accent: #14130f;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          color-scheme: dark;
+          --bg: #14130f;
+          --surface: #1e1c18;
+          --tint: #221f1b;
+          --line: #2e2b26;
+          --text: #f2efe8;
+          --text-muted: #a8a49b;
+          --accent: #4a9e7a;
+          --accent-hover: #5fb18c;
+          --on-accent: #14130f;
+        }
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        min-height: 100dvh;
+        padding: 1.5rem;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+        line-height: 1.7;
+      }
+
+      .card {
+        width: 100%;
+        max-width: 30rem;
+        padding: 2.5rem;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+      }
+
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.3rem 0.75rem;
+        margin-bottom: 1.25rem;
+        background: var(--tint);
+        border-radius: 6px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--text);
+      }
+
+      .status .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+
+      h1 {
+        font-family: "Fraunces", Georgia, "Times New Roman", serif;
+        font-size: clamp(1.75rem, 1.3rem + 2vw, 2.25rem);
+        font-weight: 500;
+        line-height: 1.1;
+        letter-spacing: -0.015em;
+        color: var(--text);
+        margin-bottom: 0.75rem;
+      }
+
+      p {
+        color: var(--text-muted);
+        margin-bottom: 1.75rem;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        padding: 0.75rem 1.5rem;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition:
+          background-color 0.18s ease,
+          border-color 0.18s ease,
+          color 0.18s ease;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: var(--on-accent);
+      }
+
+      .btn-primary:hover {
+        background: var(--accent-hover);
+      }
+
+      .btn-ghost {
+        background: transparent;
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .btn-ghost:hover {
+        background: var(--tint);
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+      }
+
+      .footnote {
+        margin: 1.75rem 0 0;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--line);
+        font-size: 0.9375rem;
+        color: var(--text-muted);
+      }
+
+      .footnote a {
+        color: var(--accent);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="card">
+      <p class="status">
+        <span class="dot" aria-hidden="true"></span>
+        No connection
+      </p>
+
+      <h1>You're offline</h1>
+
+      <p>
+        Pages you've already visited are still available from cache. Anything
+        you haven't opened yet needs a connection — as does the contact form,
+        which sends straight to my inbox.
+      </p>
+
+      <div class="actions">
+        <a href="/" class="btn btn-primary">Go to homepage</a>
+        <button type="button" class="btn btn-ghost" onclick="location.reload()">
+          Try again
+        </button>
+      </div>
+
+      <p class="footnote">
+        If you're trying to reach me right now, email
+        <a href="mailto:alimiazeez4@gmail.com">alimiazeez4@gmail.com</a> — that
+        works as soon as you're back on.
+      </p>
+    </main>
+
+    <script>
+      // Come straight back when the connection returns.
+      window.addEventListener("online", function () {
+        window.location.href = "/";
+      });
+    </script>
+  </body>
 </html>
