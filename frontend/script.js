@@ -1,10 +1,5 @@
 // ==========================================================================
 // Alimi Azeez Opeyemi — portfolio
-// Shared by index.html and projects.html.
-//
-// Deliberately absent: custom cursor, typewriter, parallax, infinite loops,
-// offline form queue, analytics. Every animation here plays once, on a real
-// scroll or on load, and then gets out of the way.
 // ==========================================================================
 
 (function () {
@@ -12,21 +7,6 @@
 
   var root = document.documentElement;
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-  // ========================================================================
-  // Which reveal path this page takes
-  //
-  // Decided here, on the first lines of the file, and written to <html> as a
-  // class the stylesheet reads. The order matters: everything below this
-  // point can throw without leaving the page invisible, because the hidden
-  // state is already resolved by the time any of it runs.
-  //
-  //   reveal-off    the visitor asked for reduced motion — nothing hides
-  //   reveal-gsap   GSAP and ScrollTrigger both loaded — inline styles drive it
-  //   reveal-css    GSAP missing (offline, blocked, CDN down) — the stylesheet
-  //                 transition drives it, triggered by IntersectionObserver
-  // ========================================================================
-
   var revealPath =
     reduceMotion.matches
       ? "reveal-off"
@@ -60,10 +40,6 @@
 
   // ========================================================================
   // Theme
-  //
-  // The theme itself is applied by an inline script in <head>, before first
-  // paint — this only wires up the button and keeps it in sync. Nothing here
-  // sets the initial theme, or the page would flash the wrong one.
   // ========================================================================
 
   var THEME_KEY = "theme";
@@ -155,11 +131,6 @@
 
   // ========================================================================
   // Header state and scroll progress — throttled to one update per frame.
-  //
-  // The progress bar is drawn by .site-header::after as a scaleX transform,
-  // so updating it never triggers layout. The custom property is set on the
-  // header rather than on <html>: fewer elements inherit it, and the rule
-  // that reads it lives inside the header.
   // ========================================================================
 
   var header = document.getElementById("site-header");
@@ -259,10 +230,7 @@
 
   // ========================================================================
   // Active section in the nav
-  //
-  // IntersectionObserver rather than a scroll handler: the previous build read
-  // offsetTop/clientHeight for every section on every scroll event, which
-  // forced a synchronous layout each time.
+
   // ========================================================================
 
   var navAnchors = Array.prototype.slice.call(
@@ -304,13 +272,6 @@
 
   // ========================================================================
   // Motion
-  //
-  // Two of the three paths are implemented here; reveal-off needs no code at
-  // all, because the stylesheet already shows everything.
-  //
-  // Whichever path runs, the hidden state is behind .js-enabled on <html>,
-  // set by the inline script in <head>. With scripting off the class is never
-  // added and the page renders fully visible.
   // ========================================================================
 
   var revealElements = document.querySelectorAll(".reveal");
@@ -404,8 +365,7 @@
     var EASE = "power2.out";
 
     // --- Hero. Plays on load; it is above the fold and never waits on a
-    // scroll. The start state is applied in this same synchronous block as
-    // the class swap above, so no frame is ever painted in between.
+
     var heroTimeline = gsap.timeline({
       defaults: { ease: EASE, duration: 0.7 },
     });
@@ -419,9 +379,6 @@
       });
     }
 
-    // The two hero figures count up to exactly what the markup already
-    // claims — the suffix ("+") and the final value are read from the DOM
-    // rather than hard-coded, so the numbers can never drift apart.
     Array.prototype.forEach.call(
       document.querySelectorAll(".hero-stats dd"),
       function (el) {

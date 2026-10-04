@@ -11,19 +11,19 @@
   "categories": ["portfolio", "development", "technology"],
   "icons": [
     {
-      "src": "/Assets/icon-192x192.png",
+      "src": "./Assets/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/Assets/icon-384x384.png",
+      "src": "./Assets/icon-384x384.png",
       "sizes": "384x384",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/Assets/icon-512x512.png",
+      "src": "./Assets/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
@@ -32,12 +32,12 @@
   "shortcuts": [
     {
       "name": "All projects",
-      "url": "/projects",
+      "url": "./projects",
       "description": "Every shipped project"
     },
     {
       "name": "Contact",
-      "url": "/#contact",
+      "url": "./#contact",
       "description": "Get in touch"
     }
   ]

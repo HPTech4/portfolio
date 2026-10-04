@@ -1,40 +1,22 @@
 // ==========================================================================
 // Service worker — Alimi Azeez Opeyemi portfolio
-//
-// Shell caching only. Navigation requests are network-first so a deploy is
-// picked up immediately; static assets are cache-first with a background
-// refresh. Nothing here is push-related — the previous version carried push
-// and notificationclick handlers that could never fire, because nothing in
-// the site ever subscribes to push.
 // ==========================================================================
 
 var CACHE_VERSION = "v2.6.0";
 var SHELL_CACHE = "portfolio-shell-" + CACHE_VERSION;
 var RUNTIME_CACHE = "portfolio-runtime-" + CACHE_VERSION;
 
-// Paths are absolute, resolved against the deploy root (`frontend/`).
-//
-// Both forms of the projects URL are listed, because a navigation only matches
-// the cache on the exact URL it asked for. In-page links use
-// "/projects.html", so they also resolve from a plain local server; Netlify
-// 301s that to "/projects", which is the canonical URL in sitemap.xml and the
-// PWA shortcut. Dropping either one sends that path to the offline page.
-//
-// The screenshots in /Assets are deliberately left out: they are large PNGs,
-// and caching five of them to serve a page that already degrades gracefully
-// offline is not a trade worth making. The CBT illustration is an exception —
-// it is vector, a few KB, and it is the only image on the projects page that
-// does not have a sibling somewhere else in the site.
+
 var PRECACHE = [
   "/",
-  "/projects",
-  "/projects.html",
-  "/style.css",
-  "/script.js",
-  "/offline.html",
-  "/manifest.json",
-  "/Assets/icon-192x192.png",
-  "/Assets/cbt-center.svg",
+  "./projects",
+  "./projects.html",
+  "./style.css",
+  "./script.js",
+  "./offline.html",
+  "./manifest.json",
+  "./Assets/icon-192x192.png",
+  "./Assets/cbt-center.svg",
 ];
 
 self.addEventListener("install", function (event) {
@@ -42,9 +24,6 @@ self.addEventListener("install", function (event) {
     caches
       .open(SHELL_CACHE)
       .then(function (cache) {
-        // cache.addAll() is atomic — one 404 would reject the whole batch and
-        // leave the site with no offline support at all. Each asset settles
-        // independently instead, and failures are logged by name.
         return Promise.allSettled(
           PRECACHE.map(function (asset) {
             return cache.add(asset).catch(function (error) {
@@ -101,9 +80,6 @@ self.addEventListener("fetch", function (event) {
   if (request.method !== "GET") return;
 
   var url = new URL(request.url);
-
-  // Leave anything cross-origin alone — the Formspree POST, Google Fonts, and
-  // any third-party request should go straight to the network untouched.
   if (url.origin !== self.location.origin) return;
 
   // Navigations: network-first, falling back to cache, then the offline page.
